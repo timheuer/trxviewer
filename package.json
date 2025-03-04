@@ -1,0 +1,101 @@
+{
+  "name": "trxviewer",
+  "displayName": "TRX Viewer",
+  "publisher": "timheuer",
+  "author": {
+    "name": "Tim Heuer"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timheuer/trxviewer.git"
+  },
+  "qna": "https://github.com/timheuer/trxviewer/issues/new",
+  "description": "TRX file visualizer",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "icon": "resources/icon.png",
+  "keywords": [
+    "trx",
+    "visualization",
+    "testing"
+  ],
+  "categories": [
+    "Other",
+    "Testing",
+    "Visualization"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "trxviewer.viewTrxFile",
+        "title": "Open in TRX Viewer",
+        "icon": "$(beaker)"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "trxviewer.trxPreview",
+        "displayName": "TRX Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.trx"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceExtname == .trx",
+          "command": "trxviewer.viewTrxFile",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .trx",
+          "command": "trxviewer.viewTrxFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "when": "resourceExtname == .trx",
+          "command": "trxviewer.viewTrxFile",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "deploy": "vsce publish"
+  },
+  "dependencies": {
+    "xml2js": "^0.6.2",
+    "@types/xml2js": "^0.4.14"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.97.0",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "eslint": "^8.52.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.2.2",
+    "@vscode/test-electron": "^2.3.6"
+  }
+}
