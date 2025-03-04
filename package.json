@@ -1,5 +1,5 @@
 {
-  "name": "trxviewer",
+  "name": "trxview",
   "displayName": "TRX Viewer",
   "publisher": "timheuer",
   "author": {
@@ -12,7 +12,7 @@
   },
   "qna": "https://github.com/timheuer/trxviewer/issues/new",
   "description": "TRX file visualizer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.97.0"
   },
