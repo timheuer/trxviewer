@@ -261,7 +261,7 @@ function generateHtmlContent(data: any): string {
     const notExecuted = parseInt(data.testRun.counters.notExecuted) || 0;
 
     // Calculate pass percentage for progress bar
-    const passPercentage = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+    const passPercentage = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(2) : '0';
 
     // Group tests by outcome
     const passedTestResults = data.testResults.filter((t: any) => t.outcome === 'Passed');
@@ -603,8 +603,8 @@ function generateHtmlContent(data: any): string {
                     <span class="stat-label">Failed</span>
                 </div>
                 <div class="stat-card other">
-                    <span class="stat-value">${notExecuted}</span>
-                    <span class="stat-label">Skipped</span>
+                    <span class="stat-value">${otherTestResults.length}</span>
+                    <span class="stat-label">Other</span>
                 </div>
             </div>
             <div class="progress-bar">
