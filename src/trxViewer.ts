@@ -756,14 +756,14 @@ function generateTestList(tests: any[]): string {
         html += `<div class="test-details">
             <button class="collapsible test-collapsible">
                 <div class="test-header">
-                    <span class="test-name">${test.name}</span>
+                    <span class="test-name">${escapeHtmlAll(test.name)}</span>
                     <span class="badge badge-${testClass}">${test.outcome}</span>
                 </div>
                 <span class="collapsed-icon"></span>
             </button>
             <div class="content test-content${isFailedTest ? ' show' : ''}" id="${testId}">
                 <div class="test-info">
-                    <div>Class: ${test.className}</div>
+                    <div>Class: ${escapeHtmlAll(test.className)}</div>
                     <div>Duration: <span class="duration">${formatDuration(test.duration)}</span></div>
                 </div>`;
 
@@ -774,9 +774,9 @@ function generateTestList(tests: any[]): string {
                     <span class="collapsed-icon"></span>
                 </button>
                 <div class="content section-content${isFailedTest ? ' show' : ''}">
-                    <div class="error-message">${escapeHtml(test.errorInfo.message)}</div>
+                    <div class="error-message">${escapeHtmlPreserveLinks(test.errorInfo.message)}</div>
                     ${test.errorInfo.stackTrace ?
-                    `<div class="stack-trace">${escapeHtml(test.errorInfo.stackTrace)}</div>` :
+                    `<div class="stack-trace">${escapeHtmlPreserveLinks(test.errorInfo.stackTrace)}</div>` :
                     ''}
                 </div>`;
         }
@@ -788,7 +788,7 @@ function generateTestList(tests: any[]): string {
                     <span class="collapsed-icon"></span>
                 </button>
                 <div class="content section-content">
-                    <div class="test-output">${escapeHtml(test.output)}</div>
+                    <div class="test-output">${escapeHtmlPreserveLinks(test.output)}</div>
                 </div>`;
         }
 
@@ -846,4 +846,35 @@ function escapeHtml(text: string): string {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+/**
+ * Escape HTML special characters and preserve URLs as clickable links
+ */
+function escapeHtmlPreserveLinks(text: string): string {
+    if (!text) return '';
+    // First escape HTML
+    const escaped = escapeHtml(text);
+
+    // Then convert URLs to clickable links
+    return escaped.replace(
+        /(https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+)/gi,
+        (url) => `<a href="${url.startsWith('www.') ? 'http://' + url : url}" target="_blank">${url}</a>`
+    );
+}
+
+/**
+ * Escape HTML special characters and URLs without making them clickable
+ */
+function escapeHtmlAll(text: string): string {
+    if (!text) return '';
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+/gi, (url) => {
+            return url.replace(/[:/.]/g, (char) => `&#${char.charCodeAt(0)};`);
+        });
 }
