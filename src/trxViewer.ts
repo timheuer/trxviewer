@@ -59,9 +59,6 @@ export async function viewTrxFile(
             context.extensionUri ? [] : undefined
         );
 
-        // Show success message
-        vscode.window.showInformationMessage(`TRX file opened successfully: ${path.basename(uri.fsPath)}`);
-
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         vscode.window.showErrorMessage(`Error opening TRX file: ${errorMessage}`, 'Show Details').then(selection => {
@@ -544,6 +541,41 @@ function generateHtmlContent(data: any): string {
             font-size: 0.8rem;
             margin-left: 0.25rem;
         }
+
+        .test-collapsible {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem;
+            background-color: var(--vscode-editor-background, #fff);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .test-details {
+            margin: 0.5rem 0;
+            border: 1px solid var(--vscode-panel-border, #eee);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .test-content {
+            padding: 1rem;
+            border-top: 1px solid var(--vscode-panel-border, #eee);
+        }
+
+        .test-collapsible:hover {
+            background-color: var(--vscode-list-hoverBackground, #f0f0f0);
+        }
     </style>
 </head>
 <body>
@@ -627,61 +659,79 @@ function generateHtmlContent(data: any): string {
     </div>
     
     <script>
-        // Add collapsible functionality
-        const collapsibles = document.querySelectorAll('.collapsible');
-        collapsibles.forEach(button => {
-            button.addEventListener('click', function() {
+        function initializeCollapsible(button) {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const content = this.nextElementSibling;
+                const icon = this.querySelector('span:last-child');
+                
                 if (content.classList.contains('show')) {
                     content.classList.remove('show');
-                    this.querySelector('span:last-child').classList.remove('expanded-icon');
-                    this.querySelector('span:last-child').classList.add('collapsed-icon');
+                    icon.classList.remove('expanded-icon');
+                    icon.classList.add('collapsed-icon');
                 } else {
                     content.classList.add('show');
-                    this.querySelector('span:last-child').classList.remove('collapsed-icon');
-                    this.querySelector('span:last-child').classList.add('expanded-icon');
+                    icon.classList.remove('collapsed-icon');
+                    icon.classList.add('expanded-icon');
                 }
             });
+        }
+
+        // Initialize all collapsibles
+        document.querySelectorAll('.collapsible').forEach(initializeCollapsible);
+
+        // Update expanded/collapsed icons for initial state
+        document.querySelectorAll('.content.show').forEach(content => {
+            const button = content.previousElementSibling;
+            if (button && button.classList.contains('collapsible')) {
+                const icon = button.querySelector('span:last-child');
+                icon.classList.remove('collapsed-icon');
+                icon.classList.add('expanded-icon');
+            }
         });
-        
-        // Add expand all functionality
+
+        // Expand all button functionality
         const expandAllButton = document.getElementById('expandAllButton');
         let allExpanded = false;
         
         expandAllButton.addEventListener('click', function() {
-            const contents = document.querySelectorAll('.content');
             allExpanded = !allExpanded;
+            const allContents = document.querySelectorAll('.content');
+            const allButtons = document.querySelectorAll('.collapsible');
             
-            if (allExpanded) {
-                contents.forEach(content => {
+            allContents.forEach(content => {
+                if (allExpanded) {
                     content.classList.add('show');
-                    const button = content.previousElementSibling;
-                    button.querySelector('span:last-child').classList.remove('collapsed-icon');
-                    button.querySelector('span:last-child').classList.add('expanded-icon');
-                });
-                this.textContent = 'Collapse All Sections';
-            } else {
-                contents.forEach(content => {
+                } else {
                     content.classList.remove('show');
-                    const button = content.previousElementSibling;
-                    button.querySelector('span:last-child').classList.remove('expanded-icon');
-                    button.querySelector('span:last-child').classList.add('collapsed-icon');
-                });
-                this.textContent = 'Expand All Sections';
-            }
+                }
+            });
+
+            allButtons.forEach(button => {
+                const icon = button.querySelector('span:last-child');
+                if (allExpanded) {
+                    icon.classList.remove('collapsed-icon');
+                    icon.classList.add('expanded-icon');
+                } else {
+                    icon.classList.remove('expanded-icon');
+                    icon.classList.add('collapsed-icon');
+                }
+            });
+            
+            this.textContent = allExpanded ? 'Collapse All Sections' : 'Expand All Sections';
         });
-        
-        // Expand the failed tests section by default if there are failures
+
+        // Expand failed tests by default
         window.addEventListener('DOMContentLoaded', () => {
-            const failedTestsCount = ${failedTestResults.length};
-            if (failedTestsCount > 0) {
-                const failedSection = document.querySelector('.test-section');
-                const failedSectionButton = failedSection.querySelector('.collapsible');
-                const failedSectionContent = failedSection.querySelector('.content');
+            const failedTestsSection = document.querySelector('.test-section');
+            if (${failedTestResults.length} > 0 && failedTestsSection) {
+                const sectionButton = failedTestsSection.querySelector('.collapsible');
+                const sectionContent = failedTestsSection.querySelector('.content');
                 
-                failedSectionContent.classList.add('show');
-                failedSectionButton.querySelector('span:last-child').classList.remove('collapsed-icon');
-                failedSectionButton.querySelector('span:last-child').classList.add('expanded-icon');
+                sectionContent.classList.add('show');
+                const icon = sectionButton.querySelector('span:last-child');
+                icon.classList.remove('collapsed-icon');
+                icon.classList.add('expanded-icon');
             }
         });
     </script>
@@ -700,30 +750,49 @@ function generateTestList(tests: any[]): string {
     let html = '';
     for (const test of tests) {
         const testClass = test.outcome.toLowerCase();
+        const testId = `test-${Math.random().toString(36).substr(2, 9)}`;
+        const isFailedTest = test.outcome === 'Failed';
 
         html += `<div class="test-details">
-            <div class="test-name">${test.name}</div>
-            <div class="test-info">
-                <div>Class: ${test.className}</div>
-                <div>Duration: <span class="duration">${formatDuration(test.duration)}</span></div>
-                <div>Status: <span class="badge badge-${testClass}">${test.outcome}</span></div>
-            </div>`;
+            <button class="collapsible test-collapsible">
+                <div class="test-header">
+                    <span class="test-name">${test.name}</span>
+                    <span class="badge badge-${testClass}">${test.outcome}</span>
+                </div>
+                <span class="collapsed-icon"></span>
+            </button>
+            <div class="content test-content${isFailedTest ? ' show' : ''}" id="${testId}">
+                <div class="test-info">
+                    <div>Class: ${test.className}</div>
+                    <div>Duration: <span class="duration">${formatDuration(test.duration)}</span></div>
+                </div>`;
 
         if (test.errorInfo) {
-            html += `<div class="error-message">${escapeHtml(test.errorInfo.message)}</div>`;
-            if (test.errorInfo.stackTrace) {
-                html += `<div class="stack-trace">${escapeHtml(test.errorInfo.stackTrace)}</div>`;
-            }
+            html += `
+                <button class="collapsible section-collapsible${isFailedTest ? ' show' : ''}">
+                    <span>Error Details</span>
+                    <span class="collapsed-icon"></span>
+                </button>
+                <div class="content section-content${isFailedTest ? ' show' : ''}">
+                    <div class="error-message">${escapeHtml(test.errorInfo.message)}</div>
+                    ${test.errorInfo.stackTrace ?
+                    `<div class="stack-trace">${escapeHtml(test.errorInfo.stackTrace)}</div>` :
+                    ''}
+                </div>`;
         }
 
         if (test.output) {
-            html += `<div>
-                <h4>Output:</h4>
-                <div class="test-output">${escapeHtml(test.output)}</div>
-            </div>`;
+            html += `
+                <button class="collapsible section-collapsible">
+                    <span>Output</span>
+                    <span class="collapsed-icon"></span>
+                </button>
+                <div class="content section-content">
+                    <div class="test-output">${escapeHtml(test.output)}</div>
+                </div>`;
         }
 
-        html += `</div>`;
+        html += `</div></div>`;
     }
 
     return html;
