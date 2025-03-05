@@ -6,7 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRX Viewer</title>
+    <link rel="stylesheet" href="{{codiconsUri}}">
     <link rel="stylesheet" href="{{cssUri}}">
+    <link rel="stylesheet" href="{{vscodeElementsCssUri}}">
+    <link rel="stylesheet" href="{{codiconsUri}}">
 </head>
 
 <body>
@@ -46,33 +49,51 @@
         </div>
     </div>
 
-    <button id="expandAllButton" class="expand-all-button">Expand All Sections</button>
+    <button id="expandAllButton" class="vscode-button">Expand All Sections</button>
 
     <!-- Failed Tests Section -->
     <div class="test-section">
-        <button class="collapsible">
-            <span>Failed Tests ({{failedCount}})</span>
-            <span class="collapsed-icon"></span>
-        </button>
-        <div class="content">{{failedTests}}</div>
+        <details class="vscode-collapsible" {{#if failedCount}}open{{/if}}>
+            <summary>
+                <i class="codicon codicon-chevron-right icon-arrow"></i>
+                <h2 class="title">
+                    Failed Tests ({{failedCount}})
+                </h2>
+            </summary>
+            <div>
+                <p>{{failedTests}}</p>
+            </div>
+        </details>
     </div>
 
     <!-- Passed Tests Section -->
     <div class="test-section">
-        <button class="collapsible">
-            <span>Passed Tests ({{passedCount}})</span>
-            <span class="collapsed-icon"></span>
-        </button>
-        <div class="content">{{passedTests}}</div>
+        <details class="vscode-collapsible">
+            <summary>
+                <i class="codicon codicon-chevron-right icon-arrow"></i>
+                <h2 class="title">
+                    Passed Tests ({{passedCount}})
+                </h2>
+            </summary>
+            <div>
+                <p>{{passedTests}}</p>
+            </div>
+        </details>
     </div>
 
     <!-- Other Tests Section -->
     <div class="test-section">
-        <button class="collapsible">
-            <span>Other Tests ({{otherCount}})</span>
-            <span class="collapsed-icon"></span>
-        </button>
-        <div class="content">{{otherTests}}</div>
+        <details class="vscode-collapsible">
+            <summary>
+                <i class="codicon codicon-chevron-right icon-arrow"></i>
+                <h2 class="title">
+                    Other Tests ({{otherCount}})
+                </h2>
+            </summary>
+            <div>
+                <p>{{otherTests}}</p>
+            </div>
+        </details>
     </div>
 
     <script src="{{scriptUri}}"></script>

@@ -86,8 +86,21 @@ class TrxEditorProvider implements vscode.CustomEditorProvider {
 			localResourceRoots: [this.extensionUri]
 		};
 
+		const cssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webview', 'styles.css'));
+		const vscodeElementsCssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webview', 'vscode-elements.css'));
+		const codiconsUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.css'));
+
 		try {
-			await viewTrxFile((document as any).uri, { extensionUri: this.extensionUri }, webviewPanel);
+			await viewTrxFile(
+				(document as any).uri,
+				{
+					extensionUri: this.extensionUri,
+					cssUri: cssUri,
+					vscodeElementsCssUri: vscodeElementsCssUri,
+					codiconsUri: codiconsUri
+				},
+				webviewPanel
+			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			webviewPanel.webview.html = `<html><body><h1>Error</h1><p>Could not open TRX file: ${errorMessage}</p></body></html>`;

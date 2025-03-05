@@ -1,0 +1,173 @@
+.vscode-button {
+    align-items: center;
+    background-color: var(--vscode-button-background);
+    border-color: var(--vscode-button-border, var(--vscode-button-background));
+    border-style: solid;
+    border-radius: 2px;
+    border-width: 1px;
+    color: var(--vscode-button-foreground);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    font-weight: var(--vscode-font-weight);
+    line-height: 22px;
+    overflow: hidden;
+    padding: 1px 13px;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.vscode-button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.vscode-button:focus,
+.vscode-button:active {
+    outline: none;
+}
+
+.vscode-button:focus {
+    background-color: var(--vscode-button-hoverBackground);
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+}
+
+.vscode-button.secondary {
+    color: var(--vscode-button-secondaryForeground);
+    background-color: var(--vscode-button-secondaryBackground);
+    border-color: var(--vscode-button-border, var(--vscode-button-secondaryBackground));
+}
+
+.vscode-button.secondary:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.vscode-button.secondary:focus {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.vscode-button:disabled {
+    cursor: default;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.vscode-button:disabled:hover {
+    background-color: var(--vscode-button-background);
+}
+
+.vscode-button:disabled {
+    background-color: var(--vscode-button-background);
+    outline: 0;
+}
+
+.vscode-button.secondary:disabled {
+    background-color: var(--vscode-button-secondaryBackground);
+}
+
+.vscode-button.secondary:disabled:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.vscode-button.block {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    width: 100%;
+}
+
+.vscode-button svg {
+    display: block;
+}
+
+.vscode-button .codicon,
+.vscode-button svg {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.vscode-button .codicon:first-child,
+.vscode-button svg:first-child {
+    margin-left: 0;
+}
+
+.vscode-button .codicon:last-child,
+.vscode-button svg:last-child {
+    margin-right: 0;
+}
+
+.vscode-collapsible+.vscode-collapsible {
+    border-top: 1px solid var(--vscode-sideBarSectionHeader-border);
+}
+
+.vscode-collapsible summary {
+    align-items: center;
+    background-color: var(--vscode-sideBarSectionHeader-background);
+    cursor: pointer;
+    display: flex;
+    height: 22px;
+    line-height: 22px;
+    user-select: none;
+}
+
+.vscode-collapsible summary:focus {
+    opacity: 1;
+    outline-offset: -1px;
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: var(--vscode-focusBorder);
+}
+
+.vscode-collapsible .icon-arrow {
+    display: block;
+    margin: 0 3px;
+}
+
+.vscode-collapsible[open] .icon-arrow {
+    transform: rotate(90deg);
+}
+
+.vscode-collapsible .title {
+    color: var(--vscode-sideBarSectionHeader-foreground);
+    display: block;
+    font-family: var(--vscode-font-family);
+    font-size: 11px;
+    font-weight: 700;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.vscode-collapsible .title .description {
+    display: none;
+    font-weight: 400;
+    margin-left: 10px;
+    text-transform: none;
+    opacity: 0.6;
+}
+
+.vscode-collapsible[open] .title .description {
+    display: inline;
+}
+
+.vscode-collapsible .actions {
+    align-items: center;
+    display: none;
+    height: 22px;
+    margin-left: auto;
+    margin-right: 4px;
+}
+
+.vscode-collapsible.always-show-actions[open] summary .actions,
+.vscode-collapsible[open]:hover summary .actions {
+    display: flex;
+}
+
+.vscode-collapsible .sub {
+    margin-left: 0.5rem;
+}

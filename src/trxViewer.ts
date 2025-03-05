@@ -4,12 +4,20 @@ import * as fs from 'fs';
 import * as xml2js from 'xml2js';
 import * as path from 'path';
 
+interface TrxViewerContext {
+    extensionUri?: vscode.Uri;
+    cssUri?: vscode.Uri;
+    scriptUri?: vscode.Uri;
+    vscodeElementsCssUri?: vscode.Uri;
+    codiconsUri?: vscode.Uri;
+}
+
 /**
  * View a TRX file in a webview panel
  */
 export async function viewTrxFile(
     uri: vscode.Uri,
-    context: { extensionUri?: vscode.Uri },
+    context: TrxViewerContext,
     existingPanel?: vscode.WebviewPanel
 ): Promise<void> {
     try {
@@ -34,20 +42,29 @@ export async function viewTrxFile(
             {
                 enableScripts: true,
                 retainContextWhenHidden: true,
-                localResourceRoots: context.extensionUri ? [context.extensionUri] : []
+                localResourceRoots: context.extensionUri ? [
+                    context.extensionUri,
+                    vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode')
+                ] : []
             }
+        );
+
+        // Get the codicons URI
+        const codiconsUri = panel.webview.asWebviewUri(
+            vscode.Uri.joinPath(context.extensionUri!, 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.css')
         );
 
         // Get paths to resources
         const webviewPath = path.join(context.extensionUri?.fsPath || '', 'src', 'webview');
         const cssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'styles.css')));
+        const vscodeElementsCssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'vscode-elements.css')));
         const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'script.js')));
         const templatePath = path.join(webviewPath, 'template.html');
 
         // Parse and render TRX content
         const trxData = await parseTrxContent(trxContent);
         const templateContent = await fs.promises.readFile(templatePath, 'utf-8');
-        const htmlContent = generateHtmlContent(templateContent, trxData, { cssUri, scriptUri });
+        const htmlContent = generateHtmlContent(templateContent, trxData, { cssUri, scriptUri, vscodeElementsCssUri, codiconsUri });
         panel.webview.html = htmlContent;
 
         // Handle webview messages
@@ -257,10 +274,17 @@ function formatDate(dateStr: string): string {
     }
 }
 
+interface HtmlResources {
+    cssUri: vscode.Uri;
+    scriptUri: vscode.Uri;
+    vscodeElementsCssUri: vscode.Uri;
+    codiconsUri: vscode.Uri;
+}
+
 /**
  * Generate HTML content by applying data to template
  */
-function generateHtmlContent(template: string, data: any, resources: { cssUri: vscode.Uri, scriptUri: vscode.Uri }): string {
+function generateHtmlContent(template: string, data: any, resources: HtmlResources): string {
     const totalTests = parseInt(data.testRun.counters.total) || 0;
     const passedTests = parseInt(data.testRun.counters.passed) || 0;
     const failedTests = data.testResults.filter((t: any) => t.outcome === 'Failed');
@@ -291,7 +315,9 @@ function generateHtmlContent(template: string, data: any, resources: { cssUri: v
     // Replace resource URIs and data placeholders
     let html = template
         .replace('{{cssUri}}', resources.cssUri.toString())
-        .replace('{{scriptUri}}', resources.scriptUri.toString());
+        .replace('{{scriptUri}}', resources.scriptUri.toString())
+        .replace('{{vscodeElementsCssUri}}', resources.vscodeElementsCssUri.toString())
+        .replace('{{codiconsUri}}', resources.codiconsUri.toString());
 
     // Replace all other template variables
     html = html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
@@ -317,45 +343,52 @@ function generateTestList(tests: any[]): string {
         const isFailedTest = test.outcome === 'Failed';
 
         html += `<div class="test-details">
-            <button class="collapsible test-collapsible">
-                <div class="test-header">
-                    <span class="test-name">${escapeHtmlAll(test.name)}</span>
-                    <span class="badge badge-${testClass}">${test.outcome}</span>
-                </div>
-                <span class="collapsed-icon"></span>
-            </button>
-            <div class="content test-content${isFailedTest ? ' show' : ''}" id="${testId}">
-                <div class="test-info">
+            <details class="vscode-collapsible">
+                <summary>
+                    <i class="codicon codicon-chevron-right details-icon"></i>
+                    <h2 class="title">
+                        ${escapeHtmlAll(test.name)}
+                    </h2>
+                </summary>
+                <div style="margin-left:0.5rem; margin-bottom:0.5rem">
                     <div>Class: ${escapeHtmlAll(test.className)}</div>
                     <div>Duration: <span class="duration">${formatDuration(test.duration)}</span></div>
                 </div>`;
 
         if (test.errorInfo) {
             html += `
-                <button class="collapsible section-collapsible${isFailedTest ? ' show' : ''}">
-                    <span>Error Details</span>
-                    <span class="collapsed-icon"></span>
-                </button>
-                <div class="content section-content${isFailedTest ? ' show' : ''}">
-                    <div class="error-message">${escapeHtmlPreserveLinks(test.errorInfo.message)}</div>
-                    ${test.errorInfo.stackTrace ?
+                <details class="vscode-collapsible sub">
+                    <summary>
+                        <i class="codicon codicon-chevron-right details-icon"></i>
+                        <h2 class="title">
+                            Error Details
+                        </h2>
+                    </summary>
+                    <div style="margin-left:0.5rem">
+                        <div class="error-message">${escapeHtmlPreserveLinks(test.errorInfo.message)}</div>
+                        ${test.errorInfo.stackTrace ?
                     `<div class="stack-trace">${escapeHtmlPreserveLinks(test.errorInfo.stackTrace)}</div>` :
                     ''}
-                </div>`;
+                    </div>
+                </details>`;
         }
 
         if (test.output) {
             html += `
-                <button class="collapsible section-collapsible">
-                    <span>Output</span>
-                    <span class="collapsed-icon"></span>
-                </button>
-                <div class="content section-content">
-                    <div class="test-output">${escapeHtmlPreserveLinks(test.output)}</div>
-                </div>`;
+                <details class="vscode-collapsible sub">
+                    <summary>
+                        <i class="codicon codicon-chevron-right details-icon"></i>
+                        <h2 class="title">
+                            Output
+                        </h2>
+                    </summary>
+                    <div style="margin-left:0.5rem">
+                        <div class="test-output">${escapeHtmlPreserveLinks(test.output)}</div>
+                    </div>
+                </details>`;
         }
 
-        html += `</div></div>`;
+        html += `</details></div>`;
     }
 
     return html;

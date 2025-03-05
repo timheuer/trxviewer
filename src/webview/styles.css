@@ -110,22 +110,17 @@ h4 {
     margin: 1.5rem 0;
 }
 
-.collapsible {
-    cursor: pointer;
-    padding: 0.5rem;
-    background-color: var(--vscode-titleBar-inactiveBackground, #f3f3f3);
-    border: none;
-    text-align: left;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    border-radius: 4px;
+/* Keep only the icon styles */
+.collapsed-icon::after {
+    content: "▶";
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
 }
 
-.collapsible:hover {
-    background-color: var(--vscode-list-hoverBackground, #e8e8e8);
+.expanded-icon::after {
+    content: "▼";
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
 }
 
 .content {
@@ -181,7 +176,6 @@ tr.passed {
     border-radius: 3px;
     white-space: pre-wrap;
     font-family: var(--vscode-editor-font-family, monospace);
-    font-size: 0.9rem;
     overflow-x: auto;
     margin-top: 0.5rem;
 }
@@ -218,19 +212,11 @@ tr.passed {
     font-family: var(--vscode-editor-font-family, monospace);
     white-space: pre-wrap;
     overflow-x: auto;
-    font-size: 0.9rem;
     padding: 0.75rem;
     background-color: var(--vscode-textCodeBlock-background, #f5f5f5);
     border: 1px solid var(--vscode-panel-border, #ddd);
     border-radius: 3px;
     margin-top: 0.5rem;
-}
-
-.test-details {
-    padding: 1rem;
-    margin: 0.5rem 0;
-    border-radius: 4px;
-    border: 1px solid var(--vscode-panel-border, #eee);
 }
 
 .test-name {
@@ -241,32 +227,6 @@ tr.passed {
 .test-info {
     color: var(--vscode-descriptionForeground, #717171);
     margin-bottom: 0.5rem;
-}
-
-.expand-all-button {
-    background-color: var(--vscode-button-background, #007acc);
-    color: var(--vscode-button-foreground, white);
-    border: none;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 3px;
-    margin: 0.5rem 0;
-}
-
-.expand-all-button:hover {
-    background-color: var(--vscode-button-hoverBackground, #006bb3);
-}
-
-.collapsed-icon::after {
-    content: "▶";
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
-}
-
-.expanded-icon::after {
-    content: "▼";
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
 }
 
 .test-collapsible {
@@ -289,10 +249,7 @@ tr.passed {
 }
 
 .test-details {
-    margin: 0.5rem 0;
-    border: 1px solid var(--vscode-panel-border, #eee);
-    border-radius: 4px;
-    overflow: hidden;
+    margin-left: 0.5rem;
 }
 
 .test-content {
@@ -302,4 +259,16 @@ tr.passed {
 
 .test-collapsible:hover {
     background-color: var(--vscode-list-hoverBackground, #f0f0f0);
+}
+
+/* Change icon-arrow to details-icon */
+.details-icon {
+    display: inline-block;
+    transition: transform 0.2s;
+    margin-right: 0.5rem;
+}
+
+/* Only rotate the icon of the directly expanded details element */
+details[open]>summary>.details-icon {
+    transform: rotate(90deg);
 }
