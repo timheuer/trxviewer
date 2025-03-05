@@ -86,8 +86,8 @@ class TrxEditorProvider implements vscode.CustomEditorProvider {
 			localResourceRoots: [this.extensionUri]
 		};
 
-		const cssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webview', 'styles.css'));
-		const vscodeElementsCssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webview', 'vscode-elements.css'));
+		const cssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'styles.css'));
+		const vscodeElementsCssUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'vscode-elements.css'));
 		const codiconsUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.css'));
 
 		try {

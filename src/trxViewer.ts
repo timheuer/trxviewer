@@ -55,7 +55,7 @@ export async function viewTrxFile(
         );
 
         // Get paths to resources
-        const webviewPath = path.join(context.extensionUri?.fsPath || '', 'src', 'webview');
+        const webviewPath = path.join(context.extensionUri?.fsPath || '', 'out', 'webview');
         const cssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'styles.css')));
         const vscodeElementsCssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'vscode-elements.css')));
         const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'script.js')));

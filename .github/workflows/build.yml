@@ -48,7 +48,7 @@ jobs:
       run: npm install -g cross-env
 
     - name: Package
-      run: vsce package
+      run: npm run package
 
     - name: Extract Package Version
       id: package_version

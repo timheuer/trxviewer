@@ -12,7 +12,7 @@
   },
   "qna": "https://github.com/timheuer/trxviewer/issues/new",
   "description": "TRX file visualizer",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -76,11 +76,14 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "watch": "tsc -watch -p ./ & npm run copy-webview",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish"
+    "deploy": "vsce publish",
+    "copy-webview": "node scripts/copyWebview.js",
+    "build": "tsc -p ./ && npm run copy-webview",
+    "package": "npm run build && vsce package"
   },
   "dependencies": {
     "@types/xml2js": "^0.4.14",
