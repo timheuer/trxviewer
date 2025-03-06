@@ -13,3 +13,5 @@ package-lock.json
 .github/**
 sample/**
 out/test/**
+docs/**
+scripts/**
