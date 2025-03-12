@@ -10,6 +10,18 @@
     "type": "git",
     "url": "https://github.com/timheuer/trxviewer.git"
   },
+  "badges": [
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/v/timheuer.trxview?label=VS%20Code%20Marketplace&color=brightgreen&logo=visualstudiocode",
+      "href": "https://marketplace.visualstudio.com/items?itemName=TimHeuer.trxview",
+      "description": "Current Version"
+    },
+    {
+      "url": "https://github.com/timheuer/trxviewer/actions/workflows/build.yaml/badge.svg",
+      "href": "https://github.com/timheuer/trxviewer/actions/workflows/build.yaml",
+      "description": "Build Status"
+    }
+  ],
   "qna": "https://github.com/timheuer/trxviewer/issues/new",
   "description": "TRX file visualizer",
   "version": "0.1.9",

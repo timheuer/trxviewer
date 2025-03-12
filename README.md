@@ -1,3 +1,5 @@
+[![VS Marketplace Badge](https://img.shields.io/visual-studio-marketplace/v/timheuer.trxview?label=VS%20Code%20Marketplace&color=brightgreen&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=TimHeuer.trxview)
+
 # TRX file viewer
 
 This is a simple renderer for VS Code of the TRX test result file format. When installed if you have a `.trx` file, this extension will offer to open and render it for you.
