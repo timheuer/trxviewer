@@ -9,3 +9,7 @@ It will parse the TRX file and visualize total, passing, failing, and other (ski
 In action...
 
 ![image](docs/sample-view.gif)
+
+## Credits
+
+Pie chart provided by [Highcharts](https://www.highcharts.com)
