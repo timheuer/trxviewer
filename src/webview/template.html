@@ -89,7 +89,7 @@
         </details>
     </div>
 
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="{{chartsUri}}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             Highcharts.chart('donut-chart', {
@@ -163,6 +163,7 @@
             document.querySelector('.run-duration .stat-value').textContent = duration;
         });
     </script>
+    <script src="{{scriptUri}}"></script>
 </body>
 
 </html>
