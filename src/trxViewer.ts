@@ -59,12 +59,13 @@ export async function viewTrxFile(
         const cssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'styles.css')));
         const vscodeElementsCssUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'vscode-elements.css')));
         const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'script.js')));
+        const chartsUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(webviewPath, 'highcharts.js')));
         const templatePath = path.join(webviewPath, 'template.html');
 
         // Parse and render TRX content
         const trxData = await parseTrxContent(trxContent);
         const templateContent = await fs.promises.readFile(templatePath, 'utf-8');
-        const htmlContent = generateHtmlContent(templateContent, trxData, { cssUri, scriptUri, vscodeElementsCssUri, codiconsUri });
+        const htmlContent = generateHtmlContent(templateContent, trxData, { cssUri, scriptUri, vscodeElementsCssUri, codiconsUri, chartsUri });
         panel.webview.html = htmlContent;
 
         // Handle webview messages
@@ -279,6 +280,7 @@ interface HtmlResources {
     scriptUri: vscode.Uri;
     vscodeElementsCssUri: vscode.Uri;
     codiconsUri: vscode.Uri;
+    chartsUri: vscode.Uri;
 }
 
 /**
@@ -317,7 +319,8 @@ function generateHtmlContent(template: string, data: any, resources: HtmlResourc
         .replace('{{cssUri}}', resources.cssUri.toString())
         .replace('{{scriptUri}}', resources.scriptUri.toString())
         .replace('{{vscodeElementsCssUri}}', resources.vscodeElementsCssUri.toString())
-        .replace('{{codiconsUri}}', resources.codiconsUri.toString());
+        .replace('{{codiconsUri}}', resources.codiconsUri.toString())
+        .replace('{{chartsUri}}', resources.chartsUri.toString());
 
     // Replace all other template variables
     html = html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {

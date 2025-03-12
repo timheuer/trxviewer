@@ -14,8 +14,7 @@
 
 <body>
     <div class="header">
-        <h1>TRX Test Results</h1>
-        <p><strong>Run:</strong> {{testRun.name}}</p>
+        <h1>{{testRun.name}}</h1>
         <p><strong>Started:</strong> {{testRun.times.startFormatted}}</p>
         <p><strong>Finished:</strong> {{testRun.times.finishFormatted}}</p>
         <p><strong>Run by:</strong> {{testRun.runUser}}</p>
@@ -23,29 +22,23 @@
 
     <div class="summary">
         <div class="summary-box">
-            <h2>Summary</h2>
-            <div class="stats-container">
-                <div class="stat-card total">
-                    <span class="stat-value">{{testRun.counters.total}}</span>
-                    <span class="stat-label">Total</span>
-                </div>
-                <div class="stat-card passed">
-                    <span class="stat-value">{{testRun.counters.passed}}</span>
-                    <span class="stat-label">Passed</span>
-                </div>
-                <div class="stat-card failed">
-                    <span class="stat-value">{{testRun.counters.failed}}</span>
-                    <span class="stat-label">Failed</span>
-                </div>
-                <div class="stat-card other">
-                    <span class="stat-value">{{otherCount}}</span>
-                    <span class="stat-label">Other</span>
-                </div>
+            <div class="stat-card total">
+                <span class="stat-value">{{testRun.counters.total}}</span>
+                <span class="stat-label">Total tests</span>
             </div>
-            <div class="progress-bar">
-                <div class="progress" style="width: {{passPercentage}}%"></div>
+            <div id="donut-chart" class="donut-chart"></div>
+            <div class="stat-card pass-percentage">
+                <span class="stat-value">{{passPercentage}}%</span>
+                <span class="stat-label">Pass percentage</span>
             </div>
-            <div class="progress-label">{{passPercentage}}% Passed</div>
+            <div class="stat-card run-duration">
+                <span class="stat-value">{{runDuration}}</span>
+                <span class="stat-label">Run duration</span>
+            </div>
+            <div class="stat-card not-reported">
+                <span class="stat-value">{{otherCount}}</span>
+                <span class="stat-label">Tests not reported</span>
+            </div>
         </div>
     </div>
 
@@ -96,7 +89,80 @@
         </details>
     </div>
 
-    <script src="{{scriptUri}}"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Highcharts.chart('donut-chart', {
+                chart: {
+                    type: 'pie',
+                    backgroundColor: 'transparent',
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    height: 200,
+                    width: 200
+                },
+                title: {
+                    text: ''
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: false
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: 'Tests',
+                    colorByPoint: true,
+                    innerSize: '50%',
+                    data: [{
+                        name: 'Passed',
+                        y: parseInt('{{testRun.counters.passed}}'),
+                        color: '#388a34'
+                    },
+                    {
+                        name: 'Failed',
+                        y: parseInt('{{testRun.counters.failed}}'),
+                        color: '#e51400'
+                    },
+                    {
+                        name: 'Others',
+                        y: parseInt('{{otherCount}}'),
+                        color: '#848484'
+                    }
+                    ]
+                }],
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    labelFormatter: function () {
+                        return this.name + ': ' + this.y;
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const start = new Date('{{testRun.times.startFormatted}}');
+            const finish = new Date('{{testRun.times.finishFormatted}}');
+            const duration = new Date(finish - start).toISOString().substr(11, 8);
+            document.querySelector('.run-duration .stat-value').textContent = duration;
+        });
+    </script>
 </body>
 
 </html>
