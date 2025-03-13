@@ -24,7 +24,7 @@
   ],
   "qna": "https://github.com/timheuer/trxviewer/issues/new",
   "description": "TRX file visualizer",
-  "version": "0.1.9",
+  "version": "0.0.0-placeholder",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -101,6 +101,7 @@
     "@types/xml2js": "^0.4.14",
     "@vscode-elements/elements-lite": "^0.3.0",
     "@vscode/codicons": "^0.0.36",
+    "nerdbank-gitversioning": "^3.8.38-alpha",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

@@ -99,8 +99,8 @@
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
                     plotShadow: false,
-                    height: 200,
-                    width: 200
+                    height: 215,
+                    width: 215
                 },
                 credits: {
                     enabled: false
@@ -162,7 +162,14 @@
         document.addEventListener('DOMContentLoaded', function () {
             const start = new Date('{{testRun.times.startFormatted}}');
             const finish = new Date('{{testRun.times.finishFormatted}}');
-            const duration = new Date(finish - start).toISOString().substr(11, 8);
+
+            const msToTime = (ms) => {
+                const seconds = Math.floor((ms / 1000) % 60);
+                const minutes = Math.floor((ms / (1000 * 60)) % 60);
+                const hours = Math.floor(ms / (1000 * 60 * 60));
+                return `${hours}hrs ${minutes}m ${seconds}s`;
+            };
+            const duration = msToTime(finish - start);
             document.querySelector('.run-duration .stat-value').textContent = duration;
         });
     </script>
