@@ -120,7 +120,15 @@
                     plotBorderWidth: null,
                     plotShadow: false,
                     height: 215,
-                    width: 215
+                    width: 215,
+                    events: {
+                        load: function() {
+                            // Add a click event on the chart itself
+                            this.container.addEventListener('click', function() {
+                                setTimeout(updatePassPercentage, 10);
+                            });
+                        }
+                    }
                 },
                 credits: {
                     enabled: false
@@ -194,7 +202,7 @@
                     const selectedPoints = chart.getSelectedPoints();
                     
                     // If no points are selected, display the overall pass percentage
-                    if (selectedPoints.length === 0) {
+                    if (!selectedPoints || selectedPoints.length === 0) {
                         const passPercent = totalCount > 0 ? ((passedCount / totalCount) * 100).toFixed(2) : '0';
                         document.querySelector('.pass-percentage .stat-value').textContent = `${passPercent}%`;
                         return;
@@ -205,9 +213,11 @@
                     let selectedPassed = 0;
                     
                     selectedPoints.forEach(point => {
-                        selectedTotal += point.y;
-                        if (point.name === 'Passed') {
-                            selectedPassed = point.y;
+                        if (point && typeof point.y === 'number') {
+                            selectedTotal += point.y;
+                            if (point.name === 'Passed') {
+                                selectedPassed = point.y;
+                            }
                         }
                     });
                     
