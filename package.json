@@ -47,6 +47,11 @@
         "command": "trxviewer.viewTrxFile",
         "title": "Open in TRX Viewer",
         "icon": "$(beaker)"
+      },
+      {
+        "command": "trxviewer.openAsText",
+        "title": "Open as Text",
+        "icon": "$(code)"
       }
     ],
     "customEditors": [
@@ -64,8 +69,13 @@
     "menus": {
       "editor/title": [
         {
-          "when": "resourceExtname == .trx",
+          "when": "resourceExtname == .trx && activeCustomEditorId != trxviewer.trxPreview",
           "command": "trxviewer.viewTrxFile",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .trx && activeCustomEditorId == trxviewer.trxPreview",
+          "command": "trxviewer.openAsText",
           "group": "navigation"
         }
       ],
@@ -78,8 +88,13 @@
       ],
       "editor/title/context": [
         {
-          "when": "resourceExtname == .trx",
+          "when": "resourceExtname == .trx && activeCustomEditorId != trxviewer.trxPreview",
           "command": "trxviewer.viewTrxFile",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .trx && activeCustomEditorId == trxviewer.trxPreview",
+          "command": "trxviewer.openAsText",
           "group": "navigation"
         }
       ]

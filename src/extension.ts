@@ -27,6 +27,25 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	// Register command to open TRX file as text
+	let openAsTextCommand = vscode.commands.registerCommand('trxviewer.openAsText', async (uri?: vscode.Uri) => {
+		try {
+			if (!uri && vscode.window.activeCustomEditors.length > 0) {
+				// If no URI is provided but we're in a custom editor, use its URI
+				const activeCustomEditor = vscode.window.activeCustomEditors[0];
+				uri = activeCustomEditor.document.uri;
+			}
+			
+			if (uri) {
+				await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
+			} else {
+				vscode.window.showErrorMessage('No file is currently open');
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Error opening TRX file as text: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	});
+
 	// Register custom editor provider
 	const provider = new TrxEditorProvider(context.extensionUri);
 	const providerRegistration = vscode.window.registerCustomEditorProvider(
@@ -53,6 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		viewTrxCommand,
+		openAsTextCommand,
 		providerRegistration,
 		decorationProvider
 	);
