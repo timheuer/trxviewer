@@ -19,13 +19,22 @@ expandAllButton.addEventListener('click', function () {
     this.textContent = allExpanded ? 'Collapse All Sections' : 'Expand All Sections';
 });
 
-// Expand failed tests by default
+// Handle initial section states
 window.addEventListener('DOMContentLoaded', () => {
-    const failedTestsSection = document.querySelector('.test-section');
+    // Ensure all sections start collapsed
+    document.querySelectorAll('details.vscode-collapsible').forEach(section => {
+        section.removeAttribute('open');
+    });
+
+    // Only expand failed tests section if there are failures
+    const failedTestsSection = document.querySelector('.test-section details.vscode-collapsible h2');
     if (failedTestsSection) {
-        const failedCount = parseInt(failedTestsSection.querySelector('.vscode-collapsable h2').textContent.match(/\d+/)[0]);
-        if (failedCount > 0) {
-            const sectionButton = failedTestsSection.querySelector('.vscode-collapsable');
+        const failedCountMatch = failedTestsSection.textContent.match(/Failed Tests \((\d+)\)/);
+        if (failedCountMatch) {
+            const failedCount = parseInt(failedCountMatch[1]);
+            if (failedCount > 0) {
+                failedTestsSection.closest('details').setAttribute('open', '');
+            }
         }
     }
 });

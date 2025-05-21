@@ -12,6 +12,11 @@ body {
     border-bottom: 1px solid var(--vscode-panel-border, #ddd);
 }
 
+/* Style for expand all button */
+#expandAllButton {
+    margin-top: 1rem;
+}
+
 h1,
 h2,
 h3,
@@ -74,7 +79,7 @@ h4 {
 .section-icon {
     margin-right: 0.5rem;
     font-size: 14px;
-    vertical-align: text-bottom;
+    vertical-align: text-top;
 }
 
 .section-icon-failed {
