@@ -30,10 +30,9 @@ export function activate(context: vscode.ExtensionContext) {
 	// Register command to open TRX file as text
 	let openAsTextCommand = vscode.commands.registerCommand('trxviewer.openAsText', async (uri?: vscode.Uri) => {
 		try {
-			if (!uri && vscode.window.activeCustomEditors.length > 0) {
-				// If no URI is provided but we're in a custom editor, use its URI
-				const activeCustomEditor = vscode.window.activeCustomEditors[0];
-				uri = activeCustomEditor.document.uri;
+			if (!uri && vscode.window.activeTextEditor) {
+				// If no URI is provided but there's an active editor, use its URI
+				uri = vscode.window.activeTextEditor.document.uri;
 			}
 			
 			if (uri) {
