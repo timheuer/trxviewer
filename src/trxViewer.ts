@@ -291,7 +291,9 @@ function generateHtmlContent(template: string, data: any, resources: HtmlResourc
     const passedTests = parseInt(data.testRun.counters.passed) || 0;
     const failedTests = data.testResults.filter((t: any) => t.outcome === 'Failed');
     const passedTestResults = data.testResults.filter((t: any) => t.outcome === 'Passed');
-    const otherTestResults = data.testResults.filter((t: any) => t.outcome !== 'Passed' && t.outcome !== 'Failed');
+    const skippedTestResults = data.testResults.filter((t: any) => t.outcome === 'NotExecuted');
+    const otherTestResults = data.testResults.filter((t: any) => 
+        t.outcome !== 'Passed' && t.outcome !== 'Failed' && t.outcome !== 'NotExecuted');
     const passPercentage = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(2) : '0';
 
     // Add formatted dates to the template data
@@ -308,9 +310,11 @@ function generateHtmlContent(template: string, data: any, resources: HtmlResourc
         passPercentage,
         failedCount: failedTests.length,
         passedCount: passedTestResults.length,
+        skippedCount: skippedTestResults.length,
         otherCount: otherTestResults.length,
         failedTests: generateTestList(failedTests),
         passedTests: generateTestList(passedTestResults),
+        skippedTests: generateTestList(skippedTestResults),
         otherTests: generateTestList(otherTestResults)
     };
 

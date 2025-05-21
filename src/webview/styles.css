@@ -163,6 +163,11 @@ tr.passed {
     color: white;
 }
 
+.badge-skipped {
+    background-color: var(--vscode-testing-iconSkipped, #ffcc00);
+    color: black;
+}
+
 .badge-other {
     background-color: var(--vscode-testing-iconSkipped, #848484);
     color: white;
