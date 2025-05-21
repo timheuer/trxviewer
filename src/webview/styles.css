@@ -70,6 +70,25 @@ h4 {
     margin: 1.5rem 0;
 }
 
+/* Section icons for test status */
+.section-icon {
+    margin-right: 0.5rem;
+    font-size: 14px;
+    vertical-align: text-bottom;
+}
+
+.section-icon-failed {
+    color: var(--vscode-testing-iconFailed, #e51400);
+}
+
+.section-icon-passed {
+    color: var(--vscode-testing-iconPassed, #388a34);
+}
+
+.section-icon-skipped {
+    color: var(--vscode-testing-iconSkipped, #ffcc00);
+}
+
 /* Keep only the icon styles */
 .collapsed-icon::after {
     content: "▶";
