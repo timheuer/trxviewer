@@ -106,7 +106,13 @@
     <script src="{{chartsUri}}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            Highcharts.chart('donut-chart', {
+            const passedCount = parseInt('{{testRun.counters.passed}}');
+            const failedCount = parseInt('{{testRun.counters.failed}}');
+            const skippedCount = parseInt('{{skippedCount}}');
+            const othersCount = parseInt('{{otherCount}}');
+            const totalCount = passedCount + failedCount + skippedCount + othersCount;
+
+            const chart = Highcharts.chart('donut-chart', {
                 chart: {
                     type: 'pie',
                     backgroundColor: 'transparent',
@@ -137,7 +143,14 @@
                         dataLabels: {
                             enabled: false
                         },
-                        showInLegend: true
+                        showInLegend: true,
+                        point: {
+                            events: {
+                                click: function () {
+                                    updatePassPercentage();
+                                }
+                            }
+                        }
                     }
                 },
                 series: [{
@@ -146,22 +159,22 @@
                     innerSize: '50%',
                     data: [{
                         name: 'Passed',
-                        y: parseInt('{{testRun.counters.passed}}'),
+                        y: passedCount,
                         color: '#388a34'
                     },
                     {
                         name: 'Failed',
-                        y: parseInt('{{testRun.counters.failed}}'),
+                        y: failedCount,
                         color: '#e51400'
                     },
                     {
                         name: 'Skipped',
-                        y: parseInt('{{skippedCount}}'),
+                        y: skippedCount,
                         color: '#ffcc00'
                     },
                     {
                         name: 'Others',
-                        y: parseInt('{{otherCount}}'),
+                        y: othersCount,
                         color: '#848484'
                     }
                     ]
@@ -175,6 +188,33 @@
                     }
                 }
             });
+
+            function updatePassPercentage() {
+                setTimeout(() => {
+                    const selectedPoints = chart.getSelectedPoints();
+                    
+                    // If no points are selected, display the overall pass percentage
+                    if (selectedPoints.length === 0) {
+                        const passPercent = totalCount > 0 ? ((passedCount / totalCount) * 100).toFixed(2) : '0';
+                        document.querySelector('.pass-percentage .stat-value').textContent = `${passPercent}%`;
+                        return;
+                    }
+                    
+                    // Calculate pass percentage for selected points only
+                    let selectedTotal = 0;
+                    let selectedPassed = 0;
+                    
+                    selectedPoints.forEach(point => {
+                        selectedTotal += point.y;
+                        if (point.name === 'Passed') {
+                            selectedPassed = point.y;
+                        }
+                    });
+                    
+                    const passPercent = selectedTotal > 0 ? ((selectedPassed / selectedTotal) * 100).toFixed(2) : '0';
+                    document.querySelector('.pass-percentage .stat-value').textContent = `${passPercent}%`;
+                }, 10);
+            }
         });
     </script>
     <script>
