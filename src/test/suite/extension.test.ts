@@ -16,6 +16,7 @@ suite('Extension Test Suite', () => {
 	let showErrorMessageStub: sinon.SinonStub;
 	let showInformationMessageStub: sinon.SinonStub;
 	let getConfigurationStub: sinon.SinonStub;
+	let viewTrxFileStub: sinon.SinonStub;
 	
 	setup(() => {
 		sandbox = sinon.createSandbox();
@@ -31,6 +32,10 @@ suite('Extension Test Suite', () => {
 		getConfigurationStub = sandbox.stub(vscode.workspace, 'getConfiguration').returns({
 			update: sandbox.stub().resolves()
 		} as any);
+		
+		// Stub the trxViewer.viewTrxFile function
+		viewTrxFileStub = sandbox.stub();
+		sandbox.stub(require('../../trxViewer'), 'viewTrxFile').callsFake(viewTrxFileStub);
 	});
 	
 	teardown(() => {
@@ -83,15 +88,6 @@ suite('Extension Test Suite', () => {
 		const filePath = getSampleFilePath('results-example-mstest.trx');
 		const uri = createMockUri(filePath);
 		
-		// Create mock function for viewTrxFile
-		const viewTrxFileStub = sandbox.stub().resolves();
-		const originalModule = require.cache[require.resolve('../../trxViewer')];
-		require.cache[require.resolve('../../trxViewer')] = {
-			exports: {
-				viewTrxFile: viewTrxFileStub
-			}
-		};
-		
 		// Call the command handler
 		const commandHandler = sandbox.stub(vscode.commands, 'registerCommand');
 		const context = createMockExtensionContext();
@@ -106,9 +102,6 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(viewTrxFileStub.callCount, 1, 'viewTrxFile should be called');
 		assert.strictEqual(viewTrxFileStub.getCall(0).args[0], uri, 'Should pass URI to viewTrxFile');
 		assert.strictEqual(viewTrxFileStub.getCall(0).args[1], context, 'Should pass context to viewTrxFile');
-		
-		// Restore original module
-		require.cache[require.resolve('../../trxViewer')] = originalModule;
 	});
 	
 	test('openAsText command - should execute vscode.openWith command', async () => {
@@ -165,22 +158,10 @@ suite('Extension Test Suite', () => {
 			onDidDispose: sandbox.stub()
 		};
 		
-		// Create viewTrxFile stub
-		const viewTrxFileStub = sandbox.stub().resolves();
-		const originalModule = require.cache[require.resolve('../../trxViewer')];
-		require.cache[require.resolve('../../trxViewer')] = {
-			exports: {
-				viewTrxFile: viewTrxFileStub
-			}
-		};
-		
 		// Call resolveCustomEditor
 		await provider.resolveCustomEditor(document, webviewPanel, {});
 		
 		// Check if viewTrxFile was called
 		assert.strictEqual(viewTrxFileStub.callCount, 1, 'viewTrxFile should be called');
-		
-		// Restore original module
-		require.cache[require.resolve('../../trxViewer')] = originalModule;
 	});
 });

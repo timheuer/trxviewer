@@ -107,6 +107,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
+    "test:local": "npm run compile && node ./scripts/localTest.js",
+    "test:trx": "node ./scripts/trxTest.js",
     "deploy": "vsce publish",
     "copy-webview": "node scripts/copyWebview.js",
     "build": "tsc -p ./ && npm run copy-webview",

@@ -33,6 +33,11 @@ export function createMockUri(filePath: string): vscode.Uri {
         fsPath: filePath,
         with: () => createMockUri(filePath),
         toJSON: () => ({}),
+        // Adding missing properties
+        authority: '',
+        query: '',
+        fragment: '',
+        toString: () => filePath
     } as vscode.Uri;
 }
 
@@ -70,6 +75,12 @@ export function createMockExtensionContext(): vscode.ExtensionContext {
             get: () => Promise.resolve(''),
             store: () => Promise.resolve(),
             delete: () => Promise.resolve()
+        },
+        // Add missing properties
+        environmentVariableCollection: {} as vscode.EnvironmentVariableCollection,
+        extension: {} as vscode.Extension<any>,
+        languageModelAccessInformation: {
+            keyInformation: undefined
         }
     } as vscode.ExtensionContext;
 }
