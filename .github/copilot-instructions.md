@@ -17,7 +17,7 @@ This is a TypeScript based repository for a Visual Studio Code extension that pa
 - `scripts/`: Helpful scripts for repository activity only
 - `sample/`: Sample TRX files for validation
 - `resources/`: Deployable or referencable resources for documentation or package metadata
-- `src/tests`: Tests
+- `src/tests`: Tests. For tests use Jest
 
 ## Key Guidelines
 
