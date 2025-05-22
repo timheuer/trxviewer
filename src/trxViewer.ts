@@ -368,6 +368,7 @@ function generateTestList(tests: any[]): string {
                     <summary>
                         <i class="codicon codicon-chevron-right details-icon"></i>
                         <h2 class="title">
+                            <i class="codicon codicon-info section-icon"></i>
                             Error Details
                         </h2>
                     </summary>
@@ -386,6 +387,7 @@ function generateTestList(tests: any[]): string {
                     <summary>
                         <i class="codicon codicon-chevron-right details-icon"></i>
                         <h2 class="title">
+                            <i class="codicon codicon-terminal section-icon"></i>
                             Output
                         </h2>
                     </summary>
