@@ -13,18 +13,6 @@ on:
       - "docs/**"
       - "sample/**"
       - "scripts/**"
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.gitignore"
-      - "**/*.gitattributes"
-      - ".github/**"
-      - "resources/**"
-      - "docs/**"
-      - "sample/**"
-      - "scripts/**"
   workflow_dispatch:
 
 jobs:
