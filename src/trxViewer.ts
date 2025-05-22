@@ -384,7 +384,7 @@ function generateTestList(tests: any[]): string {
         if (test.output) {
             html += `
                 <details class="vscode-collapsible sub">
-                    <summary>
+                    <summary style="margin-bottom:0.5rem">
                         <i class="codicon codicon-chevron-right details-icon"></i>
                         <h2 class="title">
                             <i class="codicon codicon-terminal section-icon"></i>
