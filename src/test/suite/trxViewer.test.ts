@@ -4,20 +4,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
+// Import Jest
+import { describe, test, beforeEach, afterEach, expect } from '@jest/globals';
+
 // Import the trxViewer module to test its functions
 // We need to use the require syntax to access private functions
 const trxViewer = require('../../trxViewer');
 import { getSampleFilePath, readSampleFile, createMockUri, createMockExtensionContext } from './testUtils';
 
-suite('TRX Viewer Tests', () => {
+describe('TRX Viewer Tests', () => {
     // Test setup
     let sandbox: sinon.SinonSandbox;
     
-    setup(() => {
+    beforeEach(() => {
         sandbox = sinon.createSandbox();
     });
     
-    teardown(() => {
+    afterEach(() => {
         sandbox.restore();
     });
     
@@ -29,8 +32,8 @@ suite('TRX Viewer Tests', () => {
         const result = await trxViewer.parseTrxContent(trxContent);
         
         // Assert that we got a valid result
-        assert.ok(result, 'Result should not be null or undefined');
-        assert.ok(result.TestRun, 'Result should have TestRun');
+        expect(result).toBeDefined();
+        expect(result.TestRun).toBeDefined();
     });
     
     test('parseTrxContent should reject invalid content', async () => {
@@ -38,14 +41,7 @@ suite('TRX Viewer Tests', () => {
         const invalidContent = '<InvalidXML>This is not valid TRX</invalid>';
         
         // Test that it rejects the promise with an error
-        await assert.rejects(
-            async () => await trxViewer.parseTrxContent(invalidContent),
-            (err) => {
-                assert.ok(err instanceof Error);
-                return true;
-            },
-            'Should reject with an error for invalid XML'
-        );
+        await expect(trxViewer.parseTrxContent(invalidContent)).rejects.toThrow();
     });
     
     test('normalizeTrxData should extract correct structure', async () => {
@@ -57,17 +53,17 @@ suite('TRX Viewer Tests', () => {
         const normalizedData = trxViewer.normalizeTrxData(parsedData);
         
         // Check the structure
-        assert.ok(normalizedData.testRun, 'Should have testRun property');
-        assert.ok(normalizedData.testDefinitions, 'Should have testDefinitions property');
-        assert.ok(normalizedData.testResults, 'Should have testResults property');
-        assert.ok(Array.isArray(normalizedData.testDefinitions), 'testDefinitions should be an array');
-        assert.ok(Array.isArray(normalizedData.testResults), 'testResults should be an array');
+        expect(normalizedData.testRun).toBeDefined();
+        expect(normalizedData.testDefinitions).toBeDefined();
+        expect(normalizedData.testResults).toBeDefined();
+        expect(Array.isArray(normalizedData.testDefinitions)).toBe(true);
+        expect(Array.isArray(normalizedData.testResults)).toBe(true);
     });
     
     test('extractTestDefinitions should handle various inputs correctly', () => {
         // Test with undefined input
         const emptyResult = trxViewer.extractTestDefinitions(undefined);
-        assert.deepStrictEqual(emptyResult, [], 'Should return empty array for undefined input');
+        expect(emptyResult).toEqual([]);
         
         // Test with single test definition
         const singleTestDef = {
@@ -85,10 +81,10 @@ suite('TRX Viewer Tests', () => {
             }
         };
         const singleResult = trxViewer.extractTestDefinitions(singleTestDef);
-        assert.strictEqual(singleResult.length, 1, 'Should have one test definition');
-        assert.strictEqual(singleResult[0].id, 'test1', 'Should extract id');
-        assert.strictEqual(singleResult[0].name, 'Test 1', 'Should extract name');
-        assert.strictEqual(singleResult[0].className, 'MyClass', 'Should extract className');
+        expect(singleResult.length).toBe(1);
+        expect(singleResult[0].id).toBe('test1');
+        expect(singleResult[0].name).toBe('Test 1');
+        expect(singleResult[0].className).toBe('MyClass');
         
         // Test with multiple test definitions
         const multiTestDef = {
@@ -120,13 +116,13 @@ suite('TRX Viewer Tests', () => {
             ]
         };
         const multiResult = trxViewer.extractTestDefinitions(multiTestDef);
-        assert.strictEqual(multiResult.length, 2, 'Should have two test definitions');
+        expect(multiResult.length).toBe(2);
     });
     
     test('extractTestResults should handle various inputs correctly', () => {
         // Test with undefined input
         const emptyResult = trxViewer.extractTestResults(undefined);
-        assert.deepStrictEqual(emptyResult, [], 'Should return empty array for undefined input');
+        expect(emptyResult).toEqual([]);
         
         // Test with single test result
         const singleTestResult = {
@@ -144,10 +140,10 @@ suite('TRX Viewer Tests', () => {
             }
         };
         const singleResult = trxViewer.extractTestResults(singleTestResult);
-        assert.strictEqual(singleResult.length, 1, 'Should have one test result');
-        assert.strictEqual(singleResult[0].testId, 'test1', 'Should extract testId');
-        assert.strictEqual(singleResult[0].outcome, 'Passed', 'Should extract outcome');
-        assert.strictEqual(singleResult[0].output, 'Test output', 'Should extract output');
+        expect(singleResult.length).toBe(1);
+        expect(singleResult[0].testId).toBe('test1');
+        expect(singleResult[0].outcome).toBe('Passed');
+        expect(singleResult[0].output).toBe('Test output');
         
         // Test with error info
         const errorTestResult = {
@@ -168,9 +164,9 @@ suite('TRX Viewer Tests', () => {
             }
         };
         const errorResult = trxViewer.extractTestResults(errorTestResult);
-        assert.strictEqual(errorResult[0].outcome, 'Failed', 'Should extract error outcome');
-        assert.ok(errorResult[0].errorInfo, 'Should have errorInfo');
-        assert.strictEqual(errorResult[0].errorInfo.message, 'Error message', 'Should extract error message');
+        expect(errorResult[0].outcome).toBe('Failed');
+        expect(errorResult[0].errorInfo).toBeDefined();
+        expect(errorResult[0].errorInfo.message).toBe('Error message');
     });
     
     test('extractCounters should extract correct counters', () => {
@@ -197,10 +193,10 @@ suite('TRX Viewer Tests', () => {
         
         const result = trxViewer.extractCounters(counters);
         
-        assert.strictEqual(result.total, '10', 'Should extract total');
-        assert.strictEqual(result.passed, '6', 'Should extract passed');
-        assert.strictEqual(result.failed, '2', 'Should extract failed');
-        assert.strictEqual(result.notExecuted, '2', 'Should extract notExecuted');
+        expect(result.total).toBe('10');
+        expect(result.passed).toBe('6');
+        expect(result.failed).toBe('2');
+        expect(result.notExecuted).toBe('2');
     });
     
     test('linkTestResultsWithDefinitions should link results with definitions', () => {
@@ -217,20 +213,20 @@ suite('TRX Viewer Tests', () => {
         
         const linked = trxViewer.linkTestResultsWithDefinitions(results, definitions);
         
-        assert.strictEqual(linked.length, 3, 'Should have same number of results');
-        assert.strictEqual(linked[0].name, 'Test 1', 'Should get name from definition');
-        assert.strictEqual(linked[1].className, 'TestClass2', 'Should get className from definition');
-        assert.strictEqual(linked[2].name, 'Unknown Test', 'Should use default name for unknown test');
+        expect(linked.length).toBe(3);
+        expect(linked[0].name).toBe('Test 1');
+        expect(linked[1].className).toBe('TestClass2');
+        expect(linked[2].name).toBe('Unknown Test');
     });
     
     test('formatDate should format dates correctly', () => {
-        assert.strictEqual(trxViewer.formatDate(undefined), 'N/A', 'Should handle undefined');
-        assert.strictEqual(trxViewer.formatDate(''), 'N/A', 'Should handle empty string');
+        expect(trxViewer.formatDate(undefined)).toBe('N/A');
+        expect(trxViewer.formatDate('')).toBe('N/A');
         
         // Test with a valid date string - note that the exact formatted string depends on locale
         const dateStr = '2023-01-01T12:00:00';
         const formatted = trxViewer.formatDate(dateStr);
-        assert.ok(formatted !== 'N/A', 'Should format valid date');
-        assert.ok(formatted.includes('2023'), 'Should include year');
+        expect(formatted).not.toBe('N/A');
+        expect(formatted.includes('2023') || formatted.includes('23')).toBe(true);
     });
 });

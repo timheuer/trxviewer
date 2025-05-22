@@ -4,11 +4,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Import Jest
+import { describe, test, beforeEach, afterEach, expect } from '@jest/globals';
+
 // Import the modules to test
 import * as myExtension from '../../extension';
 import { getSampleFilePath, readSampleFile, createMockUri, createMockExtensionContext } from './testUtils';
 
-suite('Integration Test Suite', () => {
+describe('Integration Test Suite', () => {
     vscode.window.showInformationMessage('Start integration tests.');
     
     let sandbox: sinon.SinonSandbox;
@@ -16,7 +19,7 @@ suite('Integration Test Suite', () => {
     let context: vscode.ExtensionContext;
     let viewTrxFileStub: sinon.SinonStub;
     
-    setup(() => {
+    beforeEach(() => {
         sandbox = sinon.createSandbox();
         showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
         context = createMockExtensionContext();
@@ -40,7 +43,7 @@ suite('Integration Test Suite', () => {
         sandbox.stub(require('../../trxViewer'), 'viewTrxFile').callsFake(viewTrxFileStub);
     });
     
-    teardown(() => {
+    afterEach(() => {
         sandbox.restore();
     });
     
@@ -132,7 +135,7 @@ suite('Integration Test Suite', () => {
         }
         
         // Check that error was shown
-        assert.ok(showErrorMessageStub.called, 'Error message should be shown');
+        expect(showErrorMessageStub.called).toBe(true);
     });
     
     test('Integration of extension activation with command registration', async () => {
@@ -157,15 +160,15 @@ suite('Integration Test Suite', () => {
         myExtension.activate(context);
         
         // Check that both commands were registered
-        assert.ok(commandRegistry['trxviewer.viewTrxFile'], 'viewTrxFile command should be registered');
-        assert.ok(commandRegistry['trxviewer.openAsText'], 'openAsText command should be registered');
+        expect(commandRegistry['trxviewer.viewTrxFile']).toBeDefined();
+        expect(commandRegistry['trxviewer.openAsText']).toBeDefined();
         
         // Call the viewTrxFile command
         const uri = createMockUri(getSampleFilePath('results-example-mstest.trx'));
         await commandRegistry['trxviewer.viewTrxFile'](uri);
         
         // Check that viewTrxFile was called with the correct URI
-        assert.strictEqual(viewTrxFileStub.callCount, 1, 'viewTrxFile should be called');
-        assert.strictEqual(viewTrxFileStub.getCall(0).args[0], uri, 'URI should be passed to viewTrxFile');
+        expect(viewTrxFileStub.callCount).toBe(1);
+        expect(viewTrxFileStub.getCall(0).args[0]).toBe(uri);
     });
 });

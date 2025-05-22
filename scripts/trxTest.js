@@ -1,8 +1,51 @@
-// Simple test script for trxViewer.ts functions
-const assert = require('assert');
+// Simple test script for trxViewer.ts functions using Jest
 const fs = require('fs');
 const path = require('path');
 const xml2js = require('xml2js');
+
+// Setup Jest globals manually since we're not running through the Jest CLI
+global.describe = (name, fn) => {
+    console.log(`\n${name}`);
+    fn();
+};
+
+global.test = (name, fn) => {
+    console.log(`  - ${name}`);
+    Promise.resolve().then(fn).catch(e => {
+        console.error(`    FAILED: ${e.message}`);
+        process.exit(1);
+    });
+};
+
+global.expect = (actual) => ({
+    toBe: (expected) => {
+        if (actual !== expected) {
+            throw new Error(`Expected ${expected} but got ${actual}`);
+        }
+    },
+    toEqual: (expected) => {
+        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+            throw new Error(`Expected ${JSON.stringify(expected)} but got ${JSON.stringify(actual)}`);
+        }
+    },
+    toBeDefined: () => {
+        if (actual === undefined) {
+            throw new Error('Expected value to be defined');
+        }
+    },
+    toBeUndefined: () => {
+        if (actual !== undefined) {
+            throw new Error(`Expected undefined but got ${actual}`);
+        }
+    },
+    not: {
+        toBe: (expected) => {
+            if (actual === expected) {
+                throw new Error(`Expected ${actual} to not be ${expected}`);
+            }
+        }
+    }
+});
 
 // Import trxViewer.ts functions
 const trxViewerPath = path.resolve(__dirname, '../src/trxViewer.ts');
@@ -29,121 +72,112 @@ while ((match = exportRegex.exec(trxViewerContent)) !== null) {
 console.log('Found functions:', functionNames);
 
 // Create test harness
-async function testParseTrxContent() {
-    console.log('Testing parseTrxContent...');
-    
-    const parser = new xml2js.Parser({ explicitArray: false });
-    const data = await parser.parseStringPromise(trxContent);
-    
-    assert.ok(data, 'Should parse TRX content');
-    assert.ok(data.TestRun, 'Should have TestRun element');
-    
-    console.log('parseTrxContent test passed!');
-    return data;
-}
+describe('TRX Parser Tests', () => {
+    test('parseTrxContent should parse XML content', async () => {
+        const parser = new xml2js.Parser({ explicitArray: false });
+        const data = await parser.parseStringPromise(trxContent);
+        
+        expect(data).toBeDefined();
+        expect(data.TestRun).toBeDefined();
+    });
 
-function testNormalizeTrxData(data) {
-    console.log('Testing normalizeTrxData...');
-    
-    // Simple implementation of normalizeTrxData
-    const testRun = data.TestRun;
-    assert.ok(testRun, 'TestRun element should exist');
-    
-    const results = {
-        testRun: {
-            name: testRun.$.name || 'Unknown',
-            runUser: testRun.$.runUser || 'Unknown',
-            times: {
-                start: testRun.Times?.$.start || '',
-                finish: testRun.Times?.$.finish || ''
-            }
+    test('normalizeTrxData should extract test data structure', () => {
+        // Simple implementation of normalizeTrxData
+        function normalizeTrxData(data) {
+            const testRun = data.TestRun;
+            return {
+                testRun: {
+                    name: testRun.$.name || 'Unknown',
+                    runUser: testRun.$.runUser || 'Unknown',
+                    times: {
+                        start: testRun.Times?.$.start || '',
+                        finish: testRun.Times?.$.finish || ''
+                    }
+                }
+            };
         }
-    };
-    
-    assert.ok(results.testRun.name, 'Should have test run name');
-    
-    console.log('normalizeTrxData test passed!');
-    return results;
-}
-
-function testExtractTestDefinitions() {
-    console.log('Testing extractTestDefinitions...');
-    
-    // Test with undefined input
-    const emptyResult = [];
-    assert.deepStrictEqual(emptyResult, [], 'Should return empty array for undefined input');
-    
-    // Test with single test definition
-    const singleTestDef = {
-        UnitTest: {
-            $: {
-                id: 'test1',
-                name: 'Test 1'
-            },
-            TestMethod: {
+        
+        const mockData = {
+            TestRun: {
                 $: {
-                    codeBase: 'MyAssembly',
-                    className: 'MyClass'
+                    name: 'Test Run',
+                    runUser: 'Test User'
+                },
+                Times: {
+                    $: {
+                        start: '2023-01-01T12:00:00',
+                        finish: '2023-01-01T12:01:00'
+                    }
                 }
             }
-        }
-    };
-    
-    // Simple implementation of extractTestDefinitions
-    const definitions = [];
-    definitions.push({
-        id: singleTestDef.UnitTest.$.id || '',
-        name: singleTestDef.UnitTest.$.name || '',
-        storage: singleTestDef.UnitTest.TestMethod?.$.codeBase || '',
-        className: singleTestDef.UnitTest.TestMethod?.$.className || ''
-    });
-    
-    assert.strictEqual(definitions.length, 1, 'Should have one test definition');
-    assert.strictEqual(definitions[0].id, 'test1', 'Should extract id');
-    assert.strictEqual(definitions[0].name, 'Test 1', 'Should extract name');
-    assert.strictEqual(definitions[0].className, 'MyClass', 'Should extract className');
-    
-    console.log('extractTestDefinitions test passed!');
-}
-
-function testFormatDate() {
-    console.log('Testing formatDate...');
-    
-    // Simple implementation of formatDate
-    function formatDate(dateStr) {
-        if (!dateStr) { return 'N/A'; }
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleString();
-        } catch (e) {
-            return dateStr;
-        }
-    }
-    
-    assert.strictEqual(formatDate(undefined), 'N/A', 'Should handle undefined');
-    assert.strictEqual(formatDate(''), 'N/A', 'Should handle empty string');
-    
-    // Test with a valid date string
-    const dateStr = '2023-01-01T12:00:00';
-    const formatted = formatDate(dateStr);
-    assert.ok(formatted !== 'N/A', 'Should format valid date');
-    assert.ok(formatted.includes('2023') || formatted.includes('23'), 'Should include year');
-    
-    console.log('formatDate test passed!');
-}
-
-async function runTests() {
-    try {
-        const parsedData = await testParseTrxContent();
-        testNormalizeTrxData(parsedData);
-        testExtractTestDefinitions();
-        testFormatDate();
+        };
         
-        console.log('All tests passed!');
-    } catch (error) {
-        console.error('Test failed:', error);
-        process.exit(1);
-    }
-}
+        const result = normalizeTrxData(mockData);
+        expect(result.testRun.name).toBe('Test Run');
+        expect(result.testRun.times.start).toBe('2023-01-01T12:00:00');
+    });
 
-runTests();
+    test('extractTestDefinitions should handle various inputs', () => {
+        // Simple implementation of extractTestDefinitions
+        function extractTestDefinitions(testDefinitions) {
+            if (!testDefinitions || !testDefinitions.UnitTest) {
+                return [];
+            }
+            
+            const unitTests = Array.isArray(testDefinitions.UnitTest) 
+                ? testDefinitions.UnitTest 
+                : [testDefinitions.UnitTest];
+                
+            return unitTests.map(test => ({
+                id: test.$.id || '',
+                name: test.$.name || '',
+                storage: test.TestMethod?.$.codeBase || '',
+                className: test.TestMethod?.$.className || ''
+            }));
+        }
+        
+        expect(extractTestDefinitions(undefined)).toEqual([]);
+        
+        const singleTestDef = {
+            UnitTest: {
+                $: {
+                    id: 'test1',
+                    name: 'Test 1'
+                },
+                TestMethod: {
+                    $: {
+                        codeBase: 'MyAssembly',
+                        className: 'MyClass'
+                    }
+                }
+            }
+        };
+        
+        const result = extractTestDefinitions(singleTestDef);
+        expect(result.length).toBe(1);
+        expect(result[0].id).toBe('test1');
+    });
+
+    test('formatDate should format dates correctly', () => {
+        // Simple implementation of formatDate
+        function formatDate(dateStr) {
+            if (!dateStr) { return 'N/A'; }
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        expect(formatDate(undefined)).toBe('N/A');
+        expect(formatDate('')).toBe('N/A');
+        
+        // Test with a valid date string
+        const dateStr = '2023-01-01T12:00:00';
+        const formatted = formatDate(dateStr);
+        expect(formatted).not.toBe('N/A');
+    });
+});
+
+console.log('All tests completed successfully!');

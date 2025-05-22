@@ -4,11 +4,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Import Jest
+import { describe, test, beforeEach, afterEach, expect } from '@jest/globals';
+
 // Import the extension to test
 import * as myExtension from '../../extension';
 import { getSampleFilePath, readSampleFile, createMockUri, createMockExtensionContext } from './testUtils';
 
-suite('Extension Test Suite', () => {
+describe('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 	
 	let sandbox: sinon.SinonSandbox;
@@ -18,7 +21,7 @@ suite('Extension Test Suite', () => {
 	let getConfigurationStub: sinon.SinonStub;
 	let viewTrxFileStub: sinon.SinonStub;
 	
-	setup(() => {
+	beforeEach(() => {
 		sandbox = sinon.createSandbox();
 		
 		// Stub vscode.commands.executeCommand
@@ -38,12 +41,12 @@ suite('Extension Test Suite', () => {
 		sandbox.stub(require('../../trxViewer'), 'viewTrxFile').callsFake(viewTrxFileStub);
 	});
 	
-	teardown(() => {
+	afterEach(() => {
 		sandbox.restore();
 	});
 	
 	test('Extension should be present', () => {
-		assert.ok(myExtension);
+		expect(myExtension).toBeDefined();
 	});
 	
 	test('Activation - all components should be registered', async () => {
@@ -65,22 +68,22 @@ suite('Extension Test Suite', () => {
 		myExtension.activate(context);
 		
 		// Check command registrations
-		assert.strictEqual(registerCommandStub.callCount, 2, 'Should register 2 commands');
-		assert.strictEqual(registerCommandStub.getCall(0).args[0], 'trxviewer.viewTrxFile', 'Should register viewTrxFile command');
-		assert.strictEqual(registerCommandStub.getCall(1).args[0], 'trxviewer.openAsText', 'Should register openAsText command');
+		expect(registerCommandStub.callCount).toBe(2);
+		expect(registerCommandStub.getCall(0).args[0]).toBe('trxviewer.viewTrxFile');
+		expect(registerCommandStub.getCall(1).args[0]).toBe('trxviewer.openAsText');
 		
 		// Check custom editor provider registration
-		assert.strictEqual(registerCustomEditorProviderStub.callCount, 1, 'Should register 1 custom editor provider');
-		assert.strictEqual(registerCustomEditorProviderStub.getCall(0).args[0], 'trxviewer.trxPreview', 'Should register trxPreview provider');
+		expect(registerCustomEditorProviderStub.callCount).toBe(1);
+		expect(registerCustomEditorProviderStub.getCall(0).args[0]).toBe('trxviewer.trxPreview');
 		
 		// Check file decoration provider registration
-		assert.strictEqual(registerFileDecorationProviderStub.callCount, 1, 'Should register 1 file decoration provider');
+		expect(registerFileDecorationProviderStub.callCount).toBe(1);
 		
 		// Check subscriptions were added
-		assert.strictEqual(context.subscriptions.length, 4, 'Should add 4 disposables to context.subscriptions');
+		expect(context.subscriptions.length).toBe(4);
 		
 		// Check configuration update
-		assert.strictEqual(getConfigurationStub.callCount, 1, 'Should update configuration');
+		expect(getConfigurationStub.callCount).toBe(1);
 	});
 	
 	test('viewTrxFile command - should open TRX file when URI is provided', async () => {
@@ -99,9 +102,9 @@ suite('Extension Test Suite', () => {
 		await viewTrxCallback(uri);
 		
 		// Check if viewTrxFile was called with correct arguments
-		assert.strictEqual(viewTrxFileStub.callCount, 1, 'viewTrxFile should be called');
-		assert.strictEqual(viewTrxFileStub.getCall(0).args[0], uri, 'Should pass URI to viewTrxFile');
-		assert.strictEqual(viewTrxFileStub.getCall(0).args[1], context, 'Should pass context to viewTrxFile');
+		expect(viewTrxFileStub.callCount).toBe(1);
+		expect(viewTrxFileStub.getCall(0).args[0]).toBe(uri);
+		expect(viewTrxFileStub.getCall(0).args[1]).toBe(context);
 	});
 	
 	test('openAsText command - should execute vscode.openWith command', async () => {
@@ -120,10 +123,10 @@ suite('Extension Test Suite', () => {
 		await openAsTextCallback(uri);
 		
 		// Check if executeCommand was called with correct arguments
-		assert.strictEqual(executeCommandStub.callCount, 1, 'executeCommand should be called');
-		assert.strictEqual(executeCommandStub.getCall(0).args[0], 'vscode.openWith', 'Should call vscode.openWith');
-		assert.strictEqual(executeCommandStub.getCall(0).args[1], uri, 'Should pass URI to openWith');
-		assert.strictEqual(executeCommandStub.getCall(0).args[2], 'default', 'Should specify default editor');
+		expect(executeCommandStub.callCount).toBe(1);
+		expect(executeCommandStub.getCall(0).args[0]).toBe('vscode.openWith');
+		expect(executeCommandStub.getCall(0).args[1]).toBe(uri);
+		expect(executeCommandStub.getCall(0).args[2]).toBe('default');
 	});
 	
 	test('TRX editor provider should resolve custom editor', async () => {
@@ -140,7 +143,7 @@ suite('Extension Test Suite', () => {
 		myExtension.activate(context);
 		
 		// Check that provider was registered
-		assert.ok(provider, 'Provider should be registered');
+		expect(provider).toBeDefined();
 		
 		// Create a document and webview panel
 		const uri = createMockUri(getSampleFilePath('results-example-mstest.trx'));
@@ -162,6 +165,6 @@ suite('Extension Test Suite', () => {
 		await provider.resolveCustomEditor(document, webviewPanel, {});
 		
 		// Check if viewTrxFile was called
-		assert.strictEqual(viewTrxFileStub.callCount, 1, 'viewTrxFile should be called');
+		expect(viewTrxFileStub.callCount).toBe(1);
 	});
 });

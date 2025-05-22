@@ -1,40 +1,23 @@
 // Local test runner that doesn't require downloading VS Code
 // This is useful for development and CI environments where VS Code download may not work
 
-const Mocha = require('mocha');
-const glob = require('glob').glob;
+const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const sinon = require('sinon');
 
-async function runTests() {
-    // Create the mocha test
-    const mocha = new Mocha({
-        ui: 'tdd',
-        color: true,
-        timeout: 10000 // Longer timeout for tests
-    });
+// Mock VS Code API before running tests
+mockVSCode();
 
-    // Find all test files
-    const testsRoot = path.resolve(__dirname, '../out/test/suite');
-    const files = await glob('**/*.test.js', { cwd: testsRoot });
-
-    // Add files to the test suite
-    files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
-
-    // Mock VS Code API first
-    mockVSCode();
-
-    // Run the tests
-    return new Promise((resolve, reject) => {
-        mocha.run(failures => {
-            if (failures > 0) {
-                reject(new Error(`${failures} tests failed.`));
-            } else {
-                resolve();
-            }
-        });
-    });
+// Run Jest tests directly
+try {
+    const jestBin = path.resolve(__dirname, '../node_modules/.bin/jest');
+    execSync(`node ${jestBin}`, { stdio: 'inherit' });
+    console.log('All tests passed!');
+    process.exit(0);
+} catch (err) {
+    console.error('Tests failed:', err.message);
+    process.exit(1);
 }
 
 function mockVSCode() {
@@ -159,25 +142,3 @@ function mockVSCode() {
 
     console.log('VS Code API mocked successfully');
 }
-
-// Run the tests
-runTests()
-    .then(() => {
-        console.log('All tests passed!');
-        process.exit(0);
-    })
-    .catch((err) => {
-        console.error('Tests failed:', err);
-        process.exit(1);
-    });
-
-// Run the tests
-runTests()
-    .then(() => {
-        console.log('All tests passed!');
-        process.exit(0);
-    })
-    .catch((err) => {
-        console.error('Tests failed:', err);
-        process.exit(1);
-    });
