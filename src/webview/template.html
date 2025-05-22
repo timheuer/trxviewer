@@ -116,8 +116,8 @@
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
                     plotShadow: false,
-                    height: 215,
-                    width: 215
+                    height: window.innerWidth < 480 ? 180 : 215,
+                    width: window.innerWidth < 480 ? 180 : 215
                 },
                 credits: {
                     enabled: false
@@ -170,12 +170,26 @@
                     ]
                 }],
                 legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
+                    layout: window.innerWidth < 768 ? 'horizontal' : 'vertical',
+                    align: window.innerWidth < 768 ? 'center' : 'right',
+                    verticalAlign: window.innerWidth < 768 ? 'bottom' : 'middle',
                     labelFormatter: function () {
                         return this.name + ': ' + this.y;
                     }
+                },
+                responsive: {
+                    rules: [{
+                        condition: {
+                            maxWidth: 480
+                        },
+                        chartOptions: {
+                            legend: {
+                                layout: 'horizontal',
+                                align: 'center',
+                                verticalAlign: 'bottom'
+                            }
+                        }
+                    }]
                 }
             });
         });
