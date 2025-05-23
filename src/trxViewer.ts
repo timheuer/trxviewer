@@ -362,7 +362,7 @@ function generateTestList(tests: any[]): string {
                 </summary>
                 <div style="margin-left:0.5rem; margin-bottom:0.5rem">
                     <div>Class: ${escapeHtmlAll(test.className)}</div>
-                    ${test.outcome !== 'NotExecuted' ? `<div>Duration: <span class="duration">${formatDuration(test.duration)}</span></div>` : ''}
+                    ${test.outcome !== 'NotExecuted' ? `<div>Duration: ${formatDuration(test.duration)}</div>` : ''}
                 </div>`;
 
         if (test.errorInfo) {

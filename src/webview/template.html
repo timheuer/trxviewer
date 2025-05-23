@@ -189,7 +189,7 @@
                 const seconds = Math.floor((ms / 1000) % 60);
                 const minutes = Math.floor((ms / (1000 * 60)) % 60);
                 const hours = Math.floor(ms / (1000 * 60 * 60));
-                return `${hours}hrs ${minutes}m ${seconds}s`;
+                return `${hours}h ${minutes}m ${seconds}s`;
             };
             const duration = msToTime(finish - start);
             document.querySelector('.run-duration .stat-value').textContent = duration;

@@ -199,11 +199,6 @@ tr.passed {
     margin-bottom: 0.5rem;
 }
 
-.duration {
-    font-family: var(--vscode-editor-font-family, monospace);
-    color: var(--vscode-descriptionForeground, #717171);
-}
-
 .badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
