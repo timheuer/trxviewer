@@ -13,5 +13,7 @@ module.exports = {
   coverageReporters: ['text', 'lcov'],
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/out/'],
-  setupFilesAfterEnv: ['<rootDir>/src/test/jest-setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/test/jest-setup.ts'],  moduleNameMapper: {
+    '^vscode$': '<rootDir>/src/test/jest-setup.ts'
+  },
 };

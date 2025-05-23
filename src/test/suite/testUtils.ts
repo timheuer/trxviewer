@@ -12,16 +12,6 @@ export function getSampleFilePath(filename: string): string {
 }
 
 /**
- * Read the content of a sample TRX file
- * @param filename The name of the sample file
- * @returns The content of the sample file
- */
-export function readSampleFile(filename: string): string {
-    const filePath = getSampleFilePath(filename);
-    return fs.readFileSync(filePath, 'utf-8');
-}
-
-/**
  * Create a mock VSCode Uri
  * @param filePath The file path
  * @returns A mock vscode.Uri object
@@ -63,24 +53,25 @@ export function createMockExtensionContext(): vscode.ExtensionContext {
             keys: () => []
         },
         extensionPath: '/test/extension',
-        asAbsolutePath: (relativePath) => path.join('/test/extension', relativePath),
+        asAbsolutePath: (relativePath: string) => path.join('/test/extension', relativePath),
         storagePath: '/test/storage',
         globalStoragePath: '/test/globalStorage',
         logPath: '/test/logs',
         storageUri: createMockUri('/test/storage'),
         globalStorageUri: createMockUri('/test/globalStorage'),
         logUri: createMockUri('/test/logs'),
-        extensionMode: vscode.ExtensionMode.Test,
-        secrets: {
+        extensionMode: vscode.ExtensionMode.Test,        secrets: {
             get: () => Promise.resolve(''),
             store: () => Promise.resolve(),
-            delete: () => Promise.resolve()
-        },
-        // Add missing properties
-        environmentVariableCollection: {} as vscode.EnvironmentVariableCollection,
+            delete: () => Promise.resolve(),
+            onDidChange: () => ({ dispose: () => {} })
+        },        // Add missing properties
+        environmentVariableCollection: {
+            getScoped: () => ({} as vscode.EnvironmentVariableCollection)
+        } as unknown as vscode.GlobalEnvironmentVariableCollection,
         extension: {} as vscode.Extension<any>,
         languageModelAccessInformation: {
             keyInformation: undefined
         }
-    } as vscode.ExtensionContext;
+    } as unknown as vscode.ExtensionContext;
 }

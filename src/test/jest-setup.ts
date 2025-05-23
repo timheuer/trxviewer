@@ -1,10 +1,12 @@
 // This file is run before each test file by Jest
 
+// Set NODE_ENV to 'test' to enable access to private functions in modules
+process.env.NODE_ENV = 'test';
+
 // Mock the VS Code API
-const vscode = {
-    window: {
-        showInformationMessage: jest.fn(),
-        showErrorMessage: jest.fn(),
+const vscode = {    window: {
+        showInformationMessage: jest.fn().mockReturnValue(Promise.resolve(undefined)),
+        showErrorMessage: jest.fn().mockReturnValue(Promise.resolve(undefined)),
         registerCustomEditorProvider: jest.fn().mockReturnValue({
             dispose: jest.fn()
         }),
@@ -36,8 +38,7 @@ const vscode = {
         fs: {
             stat: jest.fn().mockResolvedValue({})
         }
-    },
-    Uri: {
+    },    Uri: {
         file: (path: string) => ({
             scheme: 'file',
             path,
@@ -49,7 +50,22 @@ const vscode = {
             }),
             toString: () => `file://${path}`
         }),
-        parse: jest.fn()
+        parse: jest.fn(),
+        joinPath: (uri: any, ...pathSegments: string[]) => {
+            const basePath = typeof uri === 'string' ? uri : uri.path || '';
+            const joinedPath = [basePath, ...pathSegments].join('/').replace(/\/\//g, '/');
+            return {
+                scheme: 'file',
+                path: joinedPath,
+                fsPath: joinedPath,
+                with: jest.fn().mockReturnValue({
+                    scheme: 'file',
+                    path: joinedPath,
+                    fsPath: joinedPath
+                }),
+                toString: () => `file://${joinedPath}`
+            };
+        }
     },
     ExtensionMode: {
         Test: 3,
@@ -74,8 +90,8 @@ const vscode = {
 // Set the VS Code mock as a global to be used by tests
 (global as any).vscode = vscode;
 
-// Mock the fs module
-jest.mock('fs', () => ({
+// Create fs mock available to tests
+const fsMock = {
     promises: {
         readFile: jest.fn().mockImplementation((path) => {
             if (typeof path === 'string' && path.includes('.trx')) {
@@ -91,6 +107,18 @@ jest.mock('fs', () => ({
         if (typeof path === 'string' && path.includes('.trx')) {
             return '<TestRun></TestRun>';
         }
+        if (typeof path === 'string' && path.includes('template.html')) {
+            return '<html></html>';
+        }
         return '';
     })
-}));
+};
+
+// Set it globally
+(global as any).fsMock = fsMock;
+
+// Mock the fs module
+jest.mock('fs', () => fsMock);
+
+// Export the vscode mock for module mapping
+module.exports = vscode;
