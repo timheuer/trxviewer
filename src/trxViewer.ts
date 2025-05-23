@@ -12,6 +12,9 @@ interface TrxViewerContext {
     codiconsUri?: vscode.Uri;
 }
 
+// This flag is used to export private functions for testing
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 /**
  * View a TRX file in a webview panel
  */
@@ -482,4 +485,65 @@ function escapeHtmlAll(text: string): string {
         .replace(/https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+/gi, (url) => {
             return url.replace(/[:/.]/g, (char) => `&#${char.charCodeAt(0)};`);
         });
+}
+
+// Export private functions for testing
+// These exports won't be included in the compiled JS unless NODE_ENV=test
+if (process.env.NODE_ENV === 'test') {
+    // Using 'exports' to add properties to the module's exports object
+    // This makes them accessible in tests but keeps them private in normal usage
+    Object.defineProperties(exports, {
+        'parseTrxContent': {
+            value: parseTrxContent,
+            configurable: true
+        },
+        'normalizeTrxData': {
+            value: normalizeTrxData,
+            configurable: true
+        },
+        'extractCounters': {
+            value: extractCounters,
+            configurable: true
+        },
+        'extractTestDefinitions': {
+            value: extractTestDefinitions,
+            configurable: true
+        },
+        'extractTestResults': {
+            value: extractTestResults,
+            configurable: true
+        },
+        'linkTestResultsWithDefinitions': {
+            value: linkTestResultsWithDefinitions,
+            configurable: true
+        },
+        'formatDate': {
+            value: formatDate,
+            configurable: true
+        },
+        'formatDuration': {
+            value: formatDuration,
+            configurable: true
+        },
+        'generateHtmlContent': {
+            value: generateHtmlContent,
+            configurable: true
+        },
+        'generateTestList': {
+            value: generateTestList,
+            configurable: true
+        },
+        'escapeHtml': {
+            value: escapeHtml,
+            configurable: true
+        },
+        'escapeHtmlPreserveLinks': {
+            value: escapeHtmlPreserveLinks,
+            configurable: true
+        },
+        'escapeHtmlAll': {
+            value: escapeHtmlAll,
+            configurable: true
+        }
+    });
 }
