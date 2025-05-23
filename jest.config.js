@@ -16,4 +16,11 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/test/jest-setup.ts'],  moduleNameMapper: {
     '^vscode$': '<rootDir>/src/test/jest-setup.ts'
   },
+  reporters: [
+    "default",
+    ["jest-junit", {
+      outputDirectory: "reports",
+      outputName: "junit.xml"
+    }]
+  ]
 };
