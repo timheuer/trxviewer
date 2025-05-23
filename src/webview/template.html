@@ -14,9 +14,9 @@
 <body>
     <div class="header">
         <h1>{{testRun.name}}</h1>
-        <p><strong>Started:</strong> {{testRun.times.startFormatted}}</p>
-        <p><strong>Finished:</strong> {{testRun.times.finishFormatted}}</p>
-        <p><strong>Run by:</strong> {{testRun.runUser}}</p>
+        <div><strong>Started:</strong> {{testRun.times.startFormatted}}</div>
+        <div><strong>Finished:</strong> {{testRun.times.finishFormatted}}</div>
+        <div><strong>Run by:</strong> {{testRun.runUser}}</div>
     </div>
 
     <div class="summary">
@@ -116,7 +116,7 @@
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
                     plotShadow: false,
-                    height: window.innerWidth < 480 ? 180 : 215,
+                    height: 150,
                     width: window.innerWidth < 480 ? 180 : 215
                 },
                 credits: {

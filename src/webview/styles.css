@@ -31,7 +31,6 @@ h4 {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
     background-color: var(--vscode-editor-background, #fff);
     border: 1px solid var(--vscode-panel-border, #ddd);
     border-radius: 4px;
@@ -68,7 +67,6 @@ h4 {
 .donut-chart {
     position: relative;
     width: 215px;
-    height: 215px;
     display: flex;
     align-items: center;
     justify-content: center;
