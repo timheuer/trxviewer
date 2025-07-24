@@ -2,27 +2,39 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { viewTrxFile } from './trxViewer';
+import { createLoggerFromConfig, Logger } from '@timheuer/vscode-ext-logger';
+
+// Logger instance that can be imported by other files
+export let logger: Logger;
+let extContext: vscode.ExtensionContext;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	logger = createLoggerFromConfig(context.extension.packageJSON.displayName, 'trxviewer', 'logLevel', 'info', true, context);
+	extContext = context;
 
 	// Register command to open TRX file in viewer
 	let viewTrxCommand = vscode.commands.registerCommand('trxviewer.viewTrxFile', async (uri?: vscode.Uri) => {
 		try {
 			if (uri) {
+				logger.info('Opening TRX file in viewer', uri.fsPath);
 				await viewTrxFile(uri, context);
 			} else if (vscode.window.activeTextEditor) {
 				const currentUri = vscode.window.activeTextEditor.document.uri;
 				if (currentUri.fsPath.toLowerCase().endsWith('.trx')) {
+					logger.info('Opening active TRX file in viewer', currentUri.fsPath);
 					await viewTrxFile(currentUri, context);
 				} else {
+					logger.warn('The current file is not a TRX file');
 					vscode.window.showErrorMessage('The current file is not a TRX file');
 				}
 			} else {
+				logger.warn('No file is currently open');
 				vscode.window.showErrorMessage('No file is currently open');
 			}
 		} catch (error) {
+			logger.error('Error viewing TRX file', error);
 			vscode.window.showErrorMessage(`Error viewing TRX file: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	});
@@ -31,19 +43,34 @@ export function activate(context: vscode.ExtensionContext) {
 	let openAsTextCommand = vscode.commands.registerCommand('trxviewer.openAsText', async (uri?: vscode.Uri) => {
 		try {
 			if (!uri && vscode.window.activeTextEditor) {
-				// If no URI is provided but there's an active editor, use its URI
 				uri = vscode.window.activeTextEditor.document.uri;
 			}
-			
 			if (uri) {
+				logger.info('Opening TRX file as text', uri.fsPath);
 				await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
 			} else {
+				logger.warn('No file is currently open');
 				vscode.window.showErrorMessage('No file is currently open');
 			}
 		} catch (error) {
+			logger.error('Error opening TRX file as text', error);
 			vscode.window.showErrorMessage(`Error opening TRX file as text: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	});
+
+	let reportIssueCommand = vscode.commands.registerCommand('trxviewer.reportIssue', async () => {
+		const logResult = await logger.getLogContents();
+
+		if (logResult.success) {
+			const wrappedLog = `<details><summary>Log Output</summary><pre>${logResult.contents}</pre></details>`;
+		
+			await vscode.commands.executeCommand('vscode.openIssueReporter', {
+				extensionId: extContext.extension.id,
+				data: wrappedLog
+			});
+		}
+	});
+	context.subscriptions.push(reportIssueCommand);
 
 	// Register custom editor provider
 	const provider = new TrxEditorProvider(context.extensionUri);
@@ -122,6 +149,7 @@ class TrxEditorProvider implements vscode.CustomEditorProvider {
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
+			logger.error('Error opening TRX file in webview', error);
 			webviewPanel.webview.html = `<html><body><h1>Error</h1><p>Could not open TRX file: ${errorMessage}</p></body></html>`;
 			vscode.window.showErrorMessage(`Error opening TRX file: ${errorMessage}`);
 		}

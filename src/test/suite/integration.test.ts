@@ -1,3 +1,18 @@
+// Patch global.vscode.LogLevel before any imports
+(global as any).vscode = (global as any).vscode || {};
+(global as any).vscode.LogLevel = {
+    Trace: 0,
+    Debug: 1,
+    Info: 2,
+    Warning: 3,
+    Error: 4,
+    Critical: 5,
+    Off: 6
+};
+
+// Patch vscode before any imports
+require('./testUtils').setupVscodeMocks();
+
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';

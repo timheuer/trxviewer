@@ -93,12 +93,23 @@ function mockVSCode() {
 }
 
 // Run the tests
+// Minimal mock Logger for test runner
+class Logger {
+    info(message, ...args) {
+        console.log('[INFO]', message, ...args);
+    }
+    error(message, ...args) {
+        console.error('[ERROR]', message, ...args);
+    }
+}
+const logger = new Logger();
+
 runTests()
     .then(() => {
-        console.log('All tests passed!');
+        logger.info('All tests passed!');
         process.exit(0);
     })
     .catch((err) => {
-        console.error('Tests failed:', err);
+        logger.error('Tests failed:', err);
         process.exit(1);
     });

@@ -1,3 +1,17 @@
+// Patch global.vscode.LogLevel before any imports
+(global as any).vscode = (global as any).vscode || {};
+(global as any).vscode.LogLevel = {
+    Trace: 0,
+    Debug: 1,
+    Info: 2,
+    Warning: 3,
+    Error: 4,
+    Critical: 5,
+    Off: 6
+};
+// Patch vscode before any imports
+require('./testUtils').setupVscodeMocks();
+
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
@@ -31,8 +45,13 @@ describe('Extension Test Suite', () => {
 		showErrorMessageStub = sandbox.stub(vscode.window, 'showErrorMessage').resolves(undefined);
 		showInformationMessageStub = sandbox.stub(vscode.window, 'showInformationMessage').resolves(undefined);
 		
-		// Stub configuration
+
+		// Stub configuration with get method
 		getConfigurationStub = sandbox.stub(vscode.workspace, 'getConfiguration').returns({
+			get: (key: string, defaultValue?: any) => {
+				if (key === 'logLevel') { return 'info'; }
+				return defaultValue;
+			},
 			update: sandbox.stub().resolves()
 		} as any);
 		
@@ -83,7 +102,7 @@ describe('Extension Test Suite', () => {
 		expect(context.subscriptions.length).toBe(4);
 		
 		// Check configuration update
-		expect(getConfigurationStub.callCount).toBe(1);
+	expect(getConfigurationStub.callCount).toBe(2);
 	});
 	
 	test('viewTrxFile command - should open TRX file when URI is provided', async () => {

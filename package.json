@@ -52,8 +52,40 @@
         "command": "trxviewer.openAsText",
         "title": "Open as Text",
         "icon": "$(code)"
+      },
+      {
+        "command": "trxviewer.reportIssue",
+        "title": "TRX Viewer: Report Issue",
+        "icon": "$(bug)"
       }
     ],
+    "configuration": {
+      "type": "object",
+      "title": "TRX Viewer",
+      "properties": {
+        "trxviewer.logLevel": {
+          "type": "string",
+          "default": "info",
+          "description": "Set the log level for TRX Viewer output channel.",
+          "enum": [
+            "off",
+            "trace",
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Disable all logging.",
+            "Log trace level messages.",
+            "Log debug level messages.",
+            "Log info level messages.",
+            "Log warning level messages.",
+            "Log error level messages."
+          ]
+        }
+      }
+    },
     "customEditors": [
       {
         "viewType": "trxviewer.trxPreview",
@@ -97,6 +129,11 @@
           "command": "trxviewer.openAsText",
           "group": "navigation"
         }
+      ],
+      "issue/reporter": [
+        {
+          "command": "trxviewer.reportIssue"
+        }
       ]
     }
   },
@@ -115,6 +152,7 @@
     "package": "npm run build && vsce package"
   },
   "dependencies": {
+    "@timheuer/vscode-ext-logger": "^0.1.18",
     "@types/xml2js": "^0.4.14",
     "@vscode-elements/elements-lite": "^0.3.0",
     "@vscode/codicons": "^0.0.36",

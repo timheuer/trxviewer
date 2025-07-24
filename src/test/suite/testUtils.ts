@@ -1,3 +1,69 @@
+export function setupVscodeMocks() {
+    // Patch LogLevel if not present
+    if (!("LogLevel" in vscode)) {
+        Object.defineProperty(vscode, "LogLevel", {
+            value: {
+                Trace: 0,
+                Debug: 1,
+                Info: 2,
+                Warning: 3,
+                Error: 4,
+                Critical: 5,
+                Off: 6
+            },
+            writable: false,
+            configurable: true
+        });
+    }
+    // Patch getConfiguration
+    if (vscode && vscode.workspace) {
+        vscode.workspace.getConfiguration = function(section?: string) {
+            return {
+                get: function(key: string, defaultValue?: any) {
+                    if (key === "logLevel") {
+                        return "info";
+                    }
+                    if (arguments.length === 1) {
+                        return undefined;
+                    }
+                    return defaultValue;
+                },
+                update: () => Promise.resolve(),
+                has: () => true,
+                inspect: () => undefined
+            };
+        };
+    // Patch onDidChangeConfiguration to a no-op
+    vscode.workspace.onDidChangeConfiguration = function() { return { dispose: () => {} }; };
+    }
+    // Patch createOutputChannel
+    if (vscode && vscode.window) {
+        vscode.window.createOutputChannel = function(name: string, opts?: any) {
+            let logLevel = vscode.LogLevel ? vscode.LogLevel.Info : 2;
+            let listeners: Array<any> = [];
+            return {
+                name,
+                logLevel: vscode.LogLevel ? vscode.LogLevel.Info : 2,
+                append: (value: string) => {},
+                appendLine: (value: string) => {},
+                replace: (value: string) => {},
+                trace: (...args: any[]) => {},
+                debug: (...args: any[]) => {},
+                info: (...args: any[]) => {},
+                warn: (...args: any[]) => {},
+                error: (...args: any[]) => {},
+                show: () => {},
+                hide: () => {},
+                clear: () => {},
+                dispose: () => {},
+                onDidChangeLogLevel: (cb: any) => {
+                    listeners.push(cb);
+                    return { dispose: () => {} };
+                }
+            };
+        };
+    }
+}
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
