@@ -87,9 +87,10 @@ describe('Extension Test Suite', () => {
 		myExtension.activate(context);
 		
 		// Check command registrations
-		expect(registerCommandStub.callCount).toBe(2);
+		expect(registerCommandStub.callCount).toBe(3);
 		expect(registerCommandStub.getCall(0).args[0]).toBe('trxviewer.viewTrxFile');
 		expect(registerCommandStub.getCall(1).args[0]).toBe('trxviewer.openAsText');
+		expect(registerCommandStub.getCall(2).args[0]).toBe('trxviewer.reportIssue');
 		
 		// Check custom editor provider registration
 		expect(registerCustomEditorProviderStub.callCount).toBe(1);
@@ -99,7 +100,7 @@ describe('Extension Test Suite', () => {
 		expect(registerFileDecorationProviderStub.callCount).toBe(1);
 		
 		// Check subscriptions were added
-		expect(context.subscriptions.length).toBe(4);
+		expect(context.subscriptions.length).toBe(5);
 		
 		// Check configuration update
 	expect(getConfigurationStub.callCount).toBe(2);

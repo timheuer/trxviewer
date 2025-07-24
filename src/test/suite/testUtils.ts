@@ -34,7 +34,11 @@ export function setupVscodeMocks() {
             };
         };
     // Patch onDidChangeConfiguration to a no-op
-    vscode.workspace.onDidChangeConfiguration = function() { return { dispose: () => {} }; };
+    Object.defineProperty(vscode.workspace, 'onDidChangeConfiguration', {
+        value: function() { return { dispose: () => {} }; },
+        writable: true,
+        configurable: true
+    });
     }
     // Patch createOutputChannel
     if (vscode && vscode.window) {
@@ -144,7 +148,13 @@ export function createMockExtensionContext(): vscode.ExtensionContext {
         environmentVariableCollection: {
             getScoped: () => ({} as vscode.EnvironmentVariableCollection)
         } as unknown as vscode.GlobalEnvironmentVariableCollection,
-        extension: {} as vscode.Extension<any>,
+        extension: {
+            packageJSON: {
+                displayName: 'TRX Viewer Test',
+                name: 'trxviewer',
+                version: '0.0.0'
+            }
+        } as vscode.Extension<any>,
         languageModelAccessInformation: {
             keyInformation: undefined
         }

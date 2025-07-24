@@ -1,6 +1,5 @@
 // Patch showErrorMessage globally before any imports
-import * as sinon from 'sinon';
-const globalShowErrorStub = sinon.stub();
+const globalShowErrorStub = require('sinon').stub();
 (global as any).vscode = (global as any).vscode || {};
 (global as any).vscode.window = (global as any).vscode.window || {};
 (global as any).vscode.window.showErrorMessage = globalShowErrorStub;
@@ -34,11 +33,16 @@ describe('TRX Viewer Tests', () => {
     
     beforeEach(() => {
         sandbox = sinon.createSandbox();
-        // Patch Logger.getInstance to always return a new instance
-        const loggerModule = require('../../Logger');
-        if (loggerModule.Logger) {
-            sandbox.stub(loggerModule.Logger, 'getInstance').callsFake(() => new loggerModule.Logger());
-        }
+        // Mock logger module - since Logger is imported from external package
+        // we'll mock it differently
+        const loggerStub = {
+            info: sinon.stub(),
+            debug: sinon.stub(),
+            error: sinon.stub(),
+            warn: sinon.stub()
+        };
+        // Mock the logger import in extension.ts
+        sandbox.stub(require('../../extension'), 'logger').value(loggerStub);
     });
     
     afterEach(() => {
@@ -135,7 +139,7 @@ describe('TRX Viewer Tests', () => {
             // Wait for async showErrorMessage to be called
             await Promise.resolve();
             expect(mockShowError.callCount).toBeGreaterThan(0);
-            const calledWith = mockShowError.args.map(args => args[0]).join(' ');
+            const calledWith = mockShowError.args.map((args: any[]) => args[0]).join(' ');
             expect(calledWith).toContain('Error opening TRX file');
         }
     });
@@ -165,7 +169,7 @@ describe('TRX Viewer Tests', () => {
             // Wait for async showErrorMessage to be called
             await Promise.resolve();
             expect(mockShowError.callCount).toBeGreaterThan(0);
-            const calledWith = mockShowError.args.map(args => args[0]).join(' ');
+            const calledWith = mockShowError.args.map((args: any[]) => args[0]).join(' ');
             expect(calledWith).toContain('Error opening TRX file');
         }
     });
