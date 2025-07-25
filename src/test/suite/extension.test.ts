@@ -99,8 +99,8 @@ describe('Extension Test Suite', () => {
 		// Check file decoration provider registration
 		expect(registerFileDecorationProviderStub.callCount).toBe(1);
 		
-		// Check subscriptions were added
-		expect(context.subscriptions.length).toBe(5);
+		// Check subscriptions were added (5 command/provider registrations + 1 configuration listener)
+		expect(context.subscriptions.length).toBe(6);
 		
 		// Check configuration update
 	expect(getConfigurationStub.callCount).toBe(2);
@@ -171,5 +171,54 @@ describe('Extension Test Suite', () => {
 			expect.anything(),
 			expect.anything()
 		);
+	});
+
+	test('Configuration change listener - should update log level when configuration changes', async () => {
+		const onDidChangeConfigurationStub = sandbox.stub(vscode.workspace, 'onDidChangeConfiguration');
+		
+		// Mock the event and affectsConfiguration method
+		const mockEvent = {
+			affectsConfiguration: sandbox.stub().returns(true)
+		};
+		
+		const context = createMockExtensionContext();
+		
+		// Activate the extension
+		myExtension.activate(context);
+		
+		// Verify that onDidChangeConfiguration was called
+		expect(onDidChangeConfigurationStub.callCount).toBe(1);
+		
+		// Get the configuration change callback
+		const configChangeCallback = onDidChangeConfigurationStub.getCall(0).args[0];
+		
+		// Mock the logger object after activation (it's now available as myExtension.logger)
+		const setLevelFromConfigSpy = sandbox.stub(myExtension.logger, 'setLevelFromConfig');
+		const loggerInfoSpy = sandbox.stub(myExtension.logger, 'info');
+		
+		// Simulate a configuration change for trxviewer.logLevel
+		mockEvent.affectsConfiguration.withArgs('trxviewer.logLevel').returns(true);
+		configChangeCallback(mockEvent);
+		
+		// Verify the logger level was updated
+		expect(setLevelFromConfigSpy.callCount).toBe(1);
+		expect(setLevelFromConfigSpy.getCall(0).args[0]).toBe('trxviewer');
+		expect(setLevelFromConfigSpy.getCall(0).args[1]).toBe('logLevel');
+		expect(setLevelFromConfigSpy.getCall(0).args[2]).toBe('info');
+		
+		// Verify the info message was logged
+		expect(loggerInfoSpy.callCount).toBe(1);
+		expect(loggerInfoSpy.getCall(0).args[0]).toBe('Log level updated from configuration');
+		
+		// Test that it doesn't trigger for other configuration changes
+		mockEvent.affectsConfiguration.withArgs('trxviewer.logLevel').returns(false);
+		setLevelFromConfigSpy.resetHistory();
+		loggerInfoSpy.resetHistory();
+		
+		configChangeCallback(mockEvent);
+		
+		// Verify the logger level was not updated for unrelated config changes
+		expect(setLevelFromConfigSpy.callCount).toBe(0);
+		expect(loggerInfoSpy.callCount).toBe(0);
 	});
 });

@@ -14,6 +14,14 @@ export function activate(context: vscode.ExtensionContext) {
 	logger = createLoggerFromConfig(context.extension.packageJSON.displayName, 'trxviewer', 'logLevel', 'info', true, context);
 	extContext = context;
 
+	// Listen for configuration changes to update logger level
+	const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
+		if (event.affectsConfiguration('trxviewer.logLevel')) {
+			logger.setLevelFromConfig('trxviewer', 'logLevel', 'info');
+			logger.info('Log level updated from configuration');
+		}
+	});
+
 	// Register command to open TRX file in viewer
 	let viewTrxCommand = vscode.commands.registerCommand('trxviewer.viewTrxFile', async (uri?: vscode.Uri) => {
 		try {
@@ -70,7 +78,6 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		}
 	});
-	context.subscriptions.push(reportIssueCommand);
 
 	// Register custom editor provider
 	const provider = new TrxEditorProvider(context.extensionUri);
@@ -97,8 +104,10 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(
+		configurationChangeListener,
 		viewTrxCommand,
 		openAsTextCommand,
+		reportIssueCommand,
 		providerRegistration,
 		decorationProvider
 	);
