@@ -175,15 +175,6 @@
                     verticalAlign: window.innerWidth < 768 ? 'bottom' : 'middle',
                     labelFormatter: function () {
                         return this.name + ': ' + this.y;
-                    },
-                    itemStyle: {
-                        color: getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') || '#cccccc',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        fontFamily: getComputedStyle(document.body).getPropertyValue('--vscode-font-family') || 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
-                    },
-                    itemHoverStyle: {
-                        color: getComputedStyle(document.body).getPropertyValue('--vscode-editor-foreground') || '#cccccc'
                     }
                 }
             });
