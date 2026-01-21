@@ -292,3 +292,8 @@ tr.passed {
 details[open]>summary>.details-icon {
     transform: rotate(90deg);
 }
+
+/* Override Highcharts legend text color with CSS variable */
+.highcharts-legend-item text {
+    fill: var(--vscode-foreground) !important;
+}
