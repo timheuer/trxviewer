@@ -74,7 +74,7 @@ export async function viewTrxFile(
         const templatePath = path.join(webviewPath, 'template.html');
 
         // Parse and render TRX content
-        const trxData = await parseTrxContent(trxContent, logger);
+        const trxData = await parseTrxContent(trxContent, uri.fsPath, logger);
         logger.debug('Parsed TRX content');
         const templateContent = await fs.promises.readFile(templatePath, 'utf-8');
         logger.debug('Read template content');
@@ -93,6 +93,16 @@ export async function viewTrxFile(
                     case 'info':
                         logger.info('Webview info message', message.text);
                         vscode.window.showInformationMessage(message.text);
+                        return;
+                    case 'openFile':
+                        const filePath = message.filePath;
+                        if (filePath && fs.existsSync(filePath)) {
+                            logger.info('Opening file from webview', filePath);
+                            vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
+                        } else {
+                            logger.error('File not found', filePath);
+                            vscode.window.showErrorMessage(`File not found: ${filePath}`);
+                        }
                         return;
                 }
             },
@@ -119,7 +129,7 @@ export async function viewTrxFile(
 /**
  * Parse TRX content into a structured object
  */
-async function parseTrxContent(content: string, logger?: Logger): Promise<any> {
+async function parseTrxContent(content: string, trxFilePath: string, logger?: Logger): Promise<any> {
     try {
         const parser = new xml2js.Parser({ explicitArray: false });
         return new Promise((resolve, reject) => {
@@ -129,7 +139,7 @@ async function parseTrxContent(content: string, logger?: Logger): Promise<any> {
                     reject(new Error(`Failed to parse TRX XML: ${err.message}`));
                 } else {
                     logger?.debug('TRX XML parsed successfully');
-                    resolve(normalizeTrxData(result, logger));
+                    resolve(normalizeTrxData(result, trxFilePath, logger));
                 }
             });
         });
@@ -142,12 +152,16 @@ async function parseTrxContent(content: string, logger?: Logger): Promise<any> {
 /**
  * Normalize and extract important data from the TRX structure
  */
-function normalizeTrxData(data: any, logger?: Logger): any {
+function normalizeTrxData(data: any, trxFilePath: string, logger?: Logger): any {
     const testRun = data.TestRun;
     if (!testRun) {
         logger?.error('Invalid TRX format: TestRun element not found');
         throw new Error('Invalid TRX format: TestRun element not found');
     }
+
+    // Extract deployment root for resolving relative paths
+    const trxDirectory = path.dirname(trxFilePath);
+    const deploymentRoot = testRun.TestSettings?.Deployment?.$.runDeploymentRoot || '';
 
     const results = {
         testRun: {
@@ -160,7 +174,7 @@ function normalizeTrxData(data: any, logger?: Logger): any {
             counters: extractCounters(testRun.ResultSummary?.Counters)
         },
         testDefinitions: extractTestDefinitions(testRun.TestDefinitions),
-        testResults: extractTestResults(testRun.Results)
+        testResults: extractTestResults(testRun.Results, trxDirectory, deploymentRoot, logger)
     };
 
     // Link test results with their definitions
@@ -235,9 +249,146 @@ function extractTestDefinitions(testDefs: any): any[] {
 }
 
 /**
+ * Check if a file path is a supported image type
+ */
+function isImageFile(filePath: string): boolean {
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+    const ext = path.extname(filePath).toLowerCase();
+    return imageExtensions.includes(ext);
+}
+
+/**
+ * Get MIME type for image file
+ */
+function getImageMimeType(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes: { [key: string]: string } = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+}
+
+/**
+ * Read file and convert to base64 data URI
+ */
+function readFileAsBase64(filePath: string): string | null {
+    try {
+        if (!fs.existsSync(filePath)) {
+            return null;
+        }
+        const fileBuffer = fs.readFileSync(filePath);
+        const mimeType = getImageMimeType(filePath);
+        const base64 = fileBuffer.toString('base64');
+        return `data:${mimeType};base64,${base64}`;
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Resolve a ResultFile path to an absolute path
+ * Tries multiple strategies since TRX files can have different path conventions
+ */
+function resolveResultFilePath(
+    resultFilePath: string,
+    trxDirectory: string,
+    deploymentRoot: string,
+    relativeResultsDirectory?: string,
+    computerName?: string
+): string {
+    // If already absolute, return as-is
+    if (path.isAbsolute(resultFilePath)) {
+        return resultFilePath;
+    }
+
+    const fileName = path.basename(resultFilePath);
+    const pathSegments = resultFilePath.split(/[\\/]/);
+    const firstSegment = pathSegments[0];
+
+    // Strategy 1: Try with deployment root as-is
+    if (deploymentRoot) {
+        const withDeploymentRoot = path.join(trxDirectory, deploymentRoot, resultFilePath);
+        if (fs.existsSync(withDeploymentRoot)) {
+            return withDeploymentRoot;
+        }
+    }
+
+    // Strategy 2: Try deploymentRoot\In\relativeResultsDirectory\resultFilePath
+    // This is the common pattern for .NET test results with attachments
+    if (relativeResultsDirectory && deploymentRoot) {
+        const withInFolder = path.join(trxDirectory, deploymentRoot, 'In', relativeResultsDirectory, resultFilePath);
+        if (fs.existsSync(withInFolder)) {
+            return withInFolder;
+        }
+    }
+
+    // Strategy 3: If first segment matches computerName, try replacing with relativeResultsDirectory
+    // This handles cases where TRX uses computerName but actual folder uses execution ID
+    if (relativeResultsDirectory && computerName && firstSegment === computerName) {
+        const remainingPath = pathSegments.slice(1).join(path.sep);
+        const pathWithExecutionId = remainingPath
+            ? path.join(trxDirectory, deploymentRoot || '', relativeResultsDirectory, remainingPath)
+            : path.join(trxDirectory, deploymentRoot || '', relativeResultsDirectory, fileName);
+        if (fs.existsSync(pathWithExecutionId)) {
+            return pathWithExecutionId;
+        }
+
+        // Also try with In folder
+        const pathWithInAndExecutionId = remainingPath
+            ? path.join(trxDirectory, deploymentRoot || '', 'In', relativeResultsDirectory, remainingPath)
+            : path.join(trxDirectory, deploymentRoot || '', 'In', relativeResultsDirectory, fileName);
+        if (fs.existsSync(pathWithInAndExecutionId)) {
+            return pathWithInAndExecutionId;
+        }
+    }
+
+    // Strategy 4: Try just the filename in the relativeResultsDirectory
+    if (relativeResultsDirectory && deploymentRoot) {
+        const inExecutionDir = path.join(trxDirectory, deploymentRoot, relativeResultsDirectory, fileName);
+        if (fs.existsSync(inExecutionDir)) {
+            return inExecutionDir;
+        }
+
+        // Also with In folder
+        const inExecutionDirWithIn = path.join(trxDirectory, deploymentRoot, 'In', relativeResultsDirectory, fileName);
+        if (fs.existsSync(inExecutionDirWithIn)) {
+            return inExecutionDirWithIn;
+        }
+    }
+
+    // Strategy 5: Try relative to TRX directory directly
+    const relativePath = path.join(trxDirectory, resultFilePath);
+    if (fs.existsSync(relativePath)) {
+        return relativePath;
+    }
+
+    // Strategy 6: Try just filename in deployment root
+    if (deploymentRoot) {
+        const inDeploymentRoot = path.join(trxDirectory, deploymentRoot, fileName);
+        if (fs.existsSync(inDeploymentRoot)) {
+            return inDeploymentRoot;
+        }
+    }
+
+    // Return best guess path (try with In folder pattern first as that's most common)
+    if (deploymentRoot && relativeResultsDirectory) {
+        return path.join(trxDirectory, deploymentRoot, 'In', relativeResultsDirectory, resultFilePath);
+    }
+    if (deploymentRoot) {
+        return path.join(trxDirectory, deploymentRoot, resultFilePath);
+    }
+
+    return relativePath;
+}
+
+/**
  * Extract test results from TRX data
  */
-function extractTestResults(results: any): any[] {
+function extractTestResults(results: any, trxDirectory: string = '', deploymentRoot: string = '', logger?: Logger): any[] {
     const testResults = [];
     if (!results || !results.UnitTestResult) {
         return [];
@@ -261,6 +412,51 @@ function extractTestResults(results: any): any[] {
             output = result.Output.StdOut;
         }
 
+        // Extract ResultFiles and resolve paths
+        // Note: ResultFiles is a sibling of Output, not a child
+        let resultFiles: string[] = [];
+        const relativeResultsDir = result.$.relativeResultsDirectory || '';
+        const computerName = result.$.computerName || '';
+
+        // Debug logging for ResultFiles parsing
+        logger?.info('Processing test:', result.$.testName || result.$.testId, 'hasResultFiles:', !!result.ResultFiles);
+        if (result.ResultFiles) {
+            logger?.info('ResultFiles found:', JSON.stringify(result.ResultFiles));
+        }
+
+        if (result.ResultFiles?.ResultFile) {
+            const files = Array.isArray(result.ResultFiles.ResultFile)
+                ? result.ResultFiles.ResultFile
+                : [result.ResultFiles.ResultFile];
+            logger?.info('Parsed files array:', JSON.stringify(files));
+            resultFiles = files.map((f: any) => {
+                // Handle both { $: { path: '...' } } and { path: '...' } formats
+                let filePath = '';
+                if (f.$ && f.$.path) {
+                    filePath = f.$.path;
+                } else if (typeof f === 'string') {
+                    filePath = f;
+                } else if (f.path) {
+                    filePath = f.path;
+                }
+                logger?.info('Extracted filePath:', filePath);
+                // Resolve relative paths with all available context
+                if (filePath && trxDirectory) {
+                    const resolvedPath = resolveResultFilePath(
+                        filePath,
+                        trxDirectory,
+                        deploymentRoot,
+                        relativeResultsDir,
+                        computerName
+                    );
+                    logger?.info('Resolved path:', resolvedPath, 'exists:', fs.existsSync(resolvedPath));
+                    filePath = resolvedPath;
+                }
+                return filePath;
+            }).filter((p: string) => p !== '');
+            logger?.info('Final resultFiles for test:', resultFiles);
+        }
+
         testResults.push({
             testId: result.$.testId || '',
             outcome: result.$.outcome || '',
@@ -268,7 +464,8 @@ function extractTestResults(results: any): any[] {
             startTime: result.$.startTime || '',
             endTime: result.$.endTime || '',
             errorInfo,
-            output
+            output,
+            resultFiles
         });
     }
 
@@ -319,7 +516,7 @@ function generateHtmlContent(template: string, data: any, resources: HtmlResourc
     const failedTests = data.testResults.filter((t: any) => t.outcome === 'Failed');
     const passedTestResults = data.testResults.filter((t: any) => t.outcome === 'Passed');
     const skippedTestResults = data.testResults.filter((t: any) => t.outcome === 'NotExecuted');
-    const otherTestResults = data.testResults.filter((t: any) => 
+    const otherTestResults = data.testResults.filter((t: any) =>
         t.outcome !== 'Passed' && t.outcome !== 'Failed' && t.outcome !== 'NotExecuted');
     const passPercentage = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(2) : '0';
 
@@ -420,6 +617,54 @@ function generateTestList(tests: any[]): string {
                     </summary>
                     <div style="margin-left:0.5rem">
                         <div class="test-output">${escapeHtmlPreserveLinks(test.output)}</div>
+                    </div>
+                </details>`;
+        }
+
+        // Render Result Files section
+        if (test.resultFiles && test.resultFiles.length > 0) {
+            html += `
+                <details class="vscode-collapsible sub">
+                    <summary style="margin-bottom:0.5rem">
+                        <i class="codicon codicon-chevron-right details-icon"></i>
+                        <h2 class="title">
+                            <i class="codicon codicon-file section-icon"></i>
+                            Result Files (${test.resultFiles.length})
+                        </h2>
+                    </summary>
+                    <div class="result-files-container">
+                        ${test.resultFiles.map((filePath: string) => {
+                const fileName = path.basename(filePath);
+                if (isImageFile(filePath)) {
+                    const dataUri = readFileAsBase64(filePath);
+                    if (dataUri) {
+                        return `
+                                        <div class="result-file-item result-file-image-item">
+                                            <div class="result-file-name">
+                                                <i class="codicon codicon-file-media"></i>
+                                                ${escapeHtml(fileName)}
+                                            </div>
+                                            <img src="${dataUri}" alt="${escapeHtml(fileName)}" class="result-file-image" />
+                                        </div>`;
+                    } else {
+                        return `
+                                        <div class="result-file-item">
+                                            <i class="codicon codicon-file-media"></i>
+                                            <span class="result-file-name">${escapeHtml(fileName)}</span>
+                                            <span class="result-file-error">(File not found)</span>
+                                        </div>`;
+                    }
+                } else {
+                    return `
+                                    <div class="result-file-item">
+                                        <a href="#" class="result-file-link" data-filepath="${escapeHtml(filePath)}">
+                                            <i class="codicon codicon-file"></i>
+                                            ${escapeHtml(fileName)}
+                                        </a>
+                                        <span class="result-file-path">${escapeHtml(filePath)}</span>
+                                    </div>`;
+                }
+            }).join('')}
                     </div>
                 </details>`;
         }
@@ -567,6 +812,22 @@ if (process.env.NODE_ENV === 'test') {
         },
         'escapeHtmlAll': {
             value: escapeHtmlAll,
+            configurable: true
+        },
+        'isImageFile': {
+            value: isImageFile,
+            configurable: true
+        },
+        'getImageMimeType': {
+            value: getImageMimeType,
+            configurable: true
+        },
+        'readFileAsBase64': {
+            value: readFileAsBase64,
+            configurable: true
+        },
+        'resolveResultFilePath': {
+            value: resolveResultFilePath,
             configurable: true
         }
     });

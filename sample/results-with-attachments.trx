@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="test-run-id" name="Test Run with Attachments" runUser="TestUser" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2024-01-28T10:00:00.0000000-08:00" queuing="2024-01-28T10:00:00.0000000-08:00" start="2024-01-28T10:00:00.0000000-08:00" finish="2024-01-28T10:00:05.0000000-08:00" />
+  <TestSettings name="default" id="test-settings-id">
+    <Deployment runDeploymentRoot="TestResults" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="exec-1" testId="test-1" testName="TestWithScreenshot" computerName="COMPUTER" duration="00:00:01.5000000" startTime="2024-01-28T10:00:00.0000000-08:00" endTime="2024-01-28T10:00:01.5000000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="list-1">
+      <Output>
+        <StdOut>Starting test with screenshot capture...</StdOut>
+        <ErrorInfo>
+          <Message>Expected element not found on page</Message>
+          <StackTrace>   at TestWithScreenshot() in Tests.cs:line 42</StackTrace>
+        </ErrorInfo>
+        <ResultFiles>
+          <ResultFile path="C:\TestResults\screenshot_failure.png" />
+          <ResultFile path="C:\TestResults\test_log.txt" />
+        </ResultFiles>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="exec-2" testId="test-2" testName="TestWithMultipleImages" computerName="COMPUTER" duration="00:00:02.0000000" startTime="2024-01-28T10:00:01.5000000-08:00" endTime="2024-01-28T10:00:03.5000000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="list-1">
+      <Output>
+        <StdOut>Test completed with visual verification</StdOut>
+        <ResultFiles>
+          <ResultFile path="C:\TestResults\before_state.png" />
+          <ResultFile path="C:\TestResults\after_state.png" />
+          <ResultFile path="C:\TestResults\comparison.gif" />
+        </ResultFiles>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="exec-3" testId="test-3" testName="TestWithSingleAttachment" computerName="COMPUTER" duration="00:00:00.5000000" startTime="2024-01-28T10:00:03.5000000-08:00" endTime="2024-01-28T10:00:04.0000000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="list-1">
+      <Output>
+        <ResultFiles>
+          <ResultFile path="C:\TestResults\report.pdf" />
+        </ResultFiles>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="exec-4" testId="test-4" testName="TestWithoutAttachments" computerName="COMPUTER" duration="00:00:00.1000000" startTime="2024-01-28T10:00:04.0000000-08:00" endTime="2024-01-28T10:00:04.1000000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="list-1">
+      <Output>
+        <StdOut>Simple test without any attachments</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="TestWithScreenshot" storage="tests.dll" id="test-1">
+      <Execution id="exec-1" />
+      <TestMethod codeBase="tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TestClass" name="TestWithScreenshot" />
+    </UnitTest>
+    <UnitTest name="TestWithMultipleImages" storage="tests.dll" id="test-2">
+      <Execution id="exec-2" />
+      <TestMethod codeBase="tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TestClass" name="TestWithMultipleImages" />
+    </UnitTest>
+    <UnitTest name="TestWithSingleAttachment" storage="tests.dll" id="test-3">
+      <Execution id="exec-3" />
+      <TestMethod codeBase="tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TestClass" name="TestWithSingleAttachment" />
+    </UnitTest>
+    <UnitTest name="TestWithoutAttachments" storage="tests.dll" id="test-4">
+      <Execution id="exec-4" />
+      <TestMethod codeBase="tests.dll" adapterTypeName="executor://mstestadapter/v2" className="TestClass" name="TestWithoutAttachments" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="test-1" executionId="exec-1" testListId="list-1" />
+    <TestEntry testId="test-2" executionId="exec-2" testListId="list-1" />
+    <TestEntry testId="test-3" executionId="exec-3" testListId="list-1" />
+    <TestEntry testId="test-4" executionId="exec-4" testListId="list-1" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="list-1" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="4" executed="4" passed="3" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

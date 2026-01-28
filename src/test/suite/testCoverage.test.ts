@@ -40,7 +40,7 @@ describe('TRX Viewer Coverage Tests', () => {
             </ResultSummary>
         </TestRun>`;
         
-        const result = await parseTrxContent(simpleContent);
+        const result = await parseTrxContent(simpleContent, 'C:\\test\\test.trx');
         
         expect(result).toBeDefined();
         expect(result.testRun).toBeDefined();
@@ -50,7 +50,7 @@ describe('TRX Viewer Coverage Tests', () => {
         const parseTrxContent = trxViewer.parseTrxContent;
         const invalidContent = '<invalid>XML';
         
-        await expect(parseTrxContent(invalidContent)).rejects.toThrow();
+        await expect(parseTrxContent(invalidContent, 'C:\\test\\test.trx')).rejects.toThrow();
     });    test('normalizeTrxData should extract structured data from TRX results', () => {
         // Get access to private function directly
         const normalizeTrxData = trxViewer.normalizeTrxData;
@@ -136,7 +136,7 @@ describe('TRX Viewer Coverage Tests', () => {
             }
         };
         
-        const result = normalizeTrxData(sampleData);
+        const result = normalizeTrxData(sampleData, 'C:\\test\\test.trx');
         
         expect(result).toBeDefined();
         expect(result.testRun.name).toBe('Test Suite Run');
@@ -159,7 +159,7 @@ describe('TRX Viewer Coverage Tests', () => {
         const normalizeTrxData = trxViewer.normalizeTrxData;
         const invalidData = { InvalidNode: {} };
         
-        expect(() => normalizeTrxData(invalidData)).toThrow('Invalid TRX format: TestRun element not found');
+        expect(() => normalizeTrxData(invalidData, 'C:\\test\\test.trx')).toThrow('Invalid TRX format: TestRun element not found');
     });    test('extractCounters should handle various counter formats', () => {
         // Get access to private function directly
         const extractCounters = trxViewer.extractCounters;

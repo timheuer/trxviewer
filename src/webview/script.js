@@ -2,6 +2,9 @@
 const expandAllButton = document.getElementById('expandAllButton');
 let allExpanded = false;
 
+// VS Code API for messaging
+const vscode = acquireVsCodeApi();
+
 expandAllButton.addEventListener('click', function () {
     allExpanded = !allExpanded;
     const allContents = document.querySelectorAll('details.vscode-collapsible');
@@ -37,4 +40,19 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Handle result file link clicks
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('.result-file-link');
+        if (link) {
+            event.preventDefault();
+            const filePath = link.getAttribute('data-filepath');
+            if (filePath) {
+                vscode.postMessage({
+                    command: 'openFile',
+                    filePath: filePath
+                });
+            }
+        }
+    });
 });
