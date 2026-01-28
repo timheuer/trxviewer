@@ -352,7 +352,9 @@ describe('ResultFiles Parsing Tests', () => {
     test('resolveResultFilePath should return absolute paths unchanged', () => {
         const resolveResultFilePath = trxViewerModule.resolveResultFilePath;
 
-        const absolutePath = 'C:\\TestResults\\screenshot.png';
-        expect(resolveResultFilePath(absolutePath, 'D:\\TRX', 'deploy')).toBe(absolutePath);
+        // Use Unix-style path for cross-platform compatibility in tests
+        // (path.isAbsolute behaves differently on Windows vs Linux)
+        const absolutePath = '/TestResults/screenshot.png';
+        expect(resolveResultFilePath(absolutePath, '/TRX', 'deploy')).toBe(absolutePath);
     });
 });

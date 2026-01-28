@@ -111,7 +111,8 @@ const fsMock = {
             return '<html></html>';
         }
         return '';
-    })
+    }),
+    existsSync: jest.fn().mockReturnValue(false)
 };
 
 // Set it globally
